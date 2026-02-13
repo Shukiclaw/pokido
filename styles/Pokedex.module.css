@@ -726,6 +726,60 @@ html, body {
   margin: 3px 0;
 }
 
+/* Details Section */
+.detailsSection {
+  background: rgba(0, 0, 0, 0.15);
+  border-radius: 10px;
+  padding: 12px;
+  margin-top: 10px;
+}
+
+.detailsSection h4 {
+  font-size: 0.9rem;
+  color: #3D5500;
+  margin-bottom: 8px;
+  text-align: center;
+}
+
+.detailsSection h5 {
+  font-size: 0.8rem;
+  color: #3D5500;
+  margin: 8px 0 4px 0;
+}
+
+.detailRow {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  color: #2D4500;
+  margin: 4px 0;
+  padding: 2px 0;
+  border-bottom: 1px dotted rgba(0, 0, 0, 0.1);
+}
+
+.attacksSection {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.attackRow {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  color: #2D4500;
+  margin: 2px 0;
+}
+
+.attackName {
+  font-weight: 700;
+}
+
+.attackDamage {
+  color: #8B4513;
+  font-weight: 700;
+}
+
 /* Tips Section */
 .tipsSection {
   background: rgba(0,0,0,0.1);

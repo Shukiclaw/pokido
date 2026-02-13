@@ -207,8 +207,19 @@ export default function Pokedex() {
       description: id.description || `${id.pokemon_name || id.name} - קלף פוקימון`,
       tips: tips,
       image: id.image,
+      highResImage: id.highResImage,
       set: id.set,
+      setId: id.setId,
       prices: id.prices,
+      attacks: id.attacks,
+      weaknesses: id.weaknesses,
+      resistances: id.resistances,
+      retreat: id.retreat,
+      illustrator: id.illustrator,
+      category: id.category,
+      dexId: id.dexId,
+      suffix: id.suffix,
+      evolveFrom: id.evolveFrom,
       geminiDetected: id.geminiDetected
     };
   };
@@ -343,7 +354,15 @@ export default function Pokedex() {
                     {/* Pokemon Image */}
                     <div className={styles.pokemonImageSection}>
                       {result.image ? (
-                        <img src={result.image} alt={result.name} className={styles.pokemonImage} />
+                        <img 
+                          src={result.image} 
+                          alt={result.name} 
+                          className={styles.pokemonImage}
+                          onError={(e) => {
+                            console.log('API image failed, falling back to uploaded image');
+                            e.target.src = image;
+                          }}
+                        />
                       ) : (
                         <img src={image} alt={result.name} className={styles.pokemonImage} />
                       )}
@@ -429,6 +448,51 @@ export default function Pokedex() {
                     {result.tips.map((tip, i) => (
                       <div key={i} className={styles.tip}>{tip}</div>
                     ))}
+                  </div>
+                  
+                  {/* פרטים נוספים */}
+                  <div className={styles.detailsSection}>
+                    <h4>📋 פרטי קלף</h4>
+                    
+                    {result.set && (
+                      <div className={styles.detailRow}>
+                        <span>סט:</span>
+                        <span>{result.set}</span>
+                      </div>
+                    )}
+                    
+                    {result.illustrator && (
+                      <div className={styles.detailRow}>
+                        <span>מאייר:</span>
+                        <span>{result.illustrator}</span>
+                      </div>
+                    )}
+                    
+                    {result.attacks && result.attacks.length > 0 && (
+                      <div className={styles.attacksSection}>
+                        <h5>⚔️ התקפות</h5>
+                        {result.attacks.map((attack, i) => (
+                          <div key={i} className={styles.attackRow}>
+                            <span className={styles.attackName}>{attack.name}</span>
+                            <span className={styles.attackDamage}>{attack.damage || ''}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    
+                    {result.weaknesses && result.weaknesses.length > 0 && (
+                      <div className={styles.detailRow}>
+                        <span>חולשה:</span>
+                        <span>{result.weaknesses.map(w => `${w.type} ${w.value}`).join(', ')}</span>
+                      </div>
+                    )}
+                    
+                    {result.retreat && (
+                      <div className={styles.detailRow}>
+                        <span>נסיגה:</span>
+                        <span>{result.retreat} ⭐</span>
+                      </div>
+                    )}
                   </div>
                 </div>
               )}

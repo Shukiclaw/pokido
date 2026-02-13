@@ -81,22 +81,39 @@ async function getPokemonCardTCGdex(pokemonName, cardNumber) {
 
 // המרת נתוני TCGdex לפורמט שלנו
 function formatCardData(card) {
+  // בניית כתובת תמונה נכונה
+  let imageUrl = card.image;
+  if (!imageUrl && card.set?.id) {
+    // פורמט: https://assets.tcgdex.net/en/sm/sm7.5/18.png
+    const setId = card.set.id.replace('-', '/');
+    imageUrl = `https://assets.tcgdex.net/en/${setId}/${card.localId}.png`;
+  }
+  
   return {
     name: card.name,
     number: card.localId || card.id,
     set: card.set?.name || 'Unknown',
+    setId: card.set?.id,
     rarity: card.rarity || 'Common',
     hp: card.hp,
     types: card.types,
     description: card.flavorText || '',
-    image: card.image || `https://assets.tcgdex.net/en/${card.set?.id?.replace('-', '/')}/${card.localId}`,
+    image: imageUrl,
+    highResImage: card.image,
     prices: {
       cardmarket: card.pricing?.cardmarket,
       tcgplayer: card.pricing?.tcgplayer
     },
     attacks: card.attacks,
     weaknesses: card.weaknesses,
-    illustrator: card.illustrator
+    resistances: card.resistances,
+    retreat: card.retreat,
+    illustrator: card.illustrator,
+    category: card.category,
+    dexId: card.dexId,
+    legal: card.legal,
+    suffix: card.suffix,
+    evolveFrom: card.evolveFrom
   };
 }
 
