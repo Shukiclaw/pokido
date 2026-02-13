@@ -12,6 +12,36 @@ const TCGDEX_API = 'https://api.tcgdex.net/v2/en';
 
 // משתני סביבה
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+const POKEMON_TCG_API_KEY = process.env.POKEMON_TCG_API_KEY;
+
+// fallback לתמונה מ-Pokemon TCG API
+async function getImageFromPokemonTCG(name, number) {
+  try {
+    const query = `name:${name.toLowerCase()}${number ? ` number:${number}` : ''}`;
+    const url = `https://api.pokemontcg.io/v2/cards?q=${encodeURIComponent(query)}&pageSize=1`;
+    
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000);
+    
+    const response = await fetch(url, {
+      headers: POKEMON_TCG_API_KEY ? { 'X-Api-Key': POKEMON_TCG_API_KEY } : {},
+      signal: controller.signal
+    });
+    
+    clearTimeout(timeoutId);
+    
+    if (!response.ok) return null;
+    
+    const data = await response.json();
+    if (data.data && data.data[0]?.images?.large) {
+      return data.data[0].images.large;
+    }
+    return null;
+  } catch (e) {
+    console.log('Pokemon TCG image fallback failed:', e.message);
+    return null;
+  }
+}
 
 // קריאה ל-TCGdex API - מהיר ואמין!
 async function getPokemonCardTCGdex(pokemonName, cardNumber) {
@@ -67,11 +97,11 @@ async function getPokemonCardTCGdex(pokemonName, cardNumber) {
     
     if (!detailResponse.ok) {
       // אם אין פרטים מלאים, נשתמש במה שיש
-      return formatCardData(selectedCard);
+      return await formatCardData(selectedCard);
     }
     
     const fullCard = await detailResponse.json();
-    return formatCardData(fullCard);
+    return await formatCardData(fullCard);
     
   } catch (err) {
     console.error('⚠️ TCGdex API failed:', err.message);
@@ -80,13 +110,24 @@ async function getPokemonCardTCGdex(pokemonName, cardNumber) {
 }
 
 // המרת נתוני TCGdex לפורמט שלנו
-function formatCardData(card) {
+async function formatCardData(card) {
   // בניית כתובת תמונה נכונה
   let imageUrl = card.image;
+  
+  // אם אין תמונה, ננסה Pokemon TCG API
+  if (!imageUrl) {
+    console.log('🖼️ No image from TCGdex, trying Pokemon TCG API...');
+    imageUrl = await getImageFromPokemonTCG(card.name, card.localId);
+  }
+  
+  // אם עדיין אין, נבנה URL לפי פורמט TCGdex
   if (!imageUrl && card.set?.id) {
-    // פורמט: https://assets.tcgdex.net/en/sm/sm7.5/18.png
-    const setId = card.set.id.replace('-', '/');
-    imageUrl = `https://assets.tcgdex.net/en/${setId}/${card.localId}.png`;
+    const setParts = card.set.id.split('-');
+    if (setParts.length >= 2) {
+      const series = setParts[0];
+      const set = card.set.id;
+      imageUrl = `https://assets.tcgdex.net/en/${series}/${set}/${card.localId}/high.png`;
+    }
   }
   
   return {
