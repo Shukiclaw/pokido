@@ -141,29 +141,64 @@ export default async function handler(req, res) {
 
     console.log(`🎯 Found: ${pokemonName}, Card #${cardNumber || 'unknown'}`);
 
-    // קריאה ל-Pokemon TCG API - קודם רק לפי שם
-    const searchQuery = `name:"${pokemonName}"`;
-    const apiUrl = `${POKEMON_TCG_API}?q=${encodeURIComponent(searchQuery)}&pageSize=20`;
+    // קריאה ל-Pokemon TCG API - פשוט יותר ללא מרכאות
+    const searchQuery = `name:${pokemonName.toLowerCase()}`;
+    const apiUrl = `${POKEMON_TCG_API}?q=${encodeURIComponent(searchQuery)}&pageSize=5&orderBy=-set.releaseDate`;
     console.log('🌐 Pokemon API:', apiUrl);
-    console.log('🔍 Searching for:', pokemonName, 'Card#:', cardNumber);
     
-    const headers = {};
+    const headers = {
+      'Accept': 'application/json'
+    };
     if (POKEMON_TCG_API_KEY) {
       headers['X-Api-Key'] = POKEMON_TCG_API_KEY;
     }
     
-    const response = await fetch(apiUrl, { headers });
+    // timeout של 8 שניות
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 8000);
+    
+    let cardData;
+    let apiError = null;
+    
+    try {
+      const response = await fetch(apiUrl, { 
+        headers,
+        signal: controller.signal
+      });
+      
+      clearTimeout(timeoutId);
 
-    if (!response.ok) {
-      throw new Error(`Pokemon TCG API error: ${response.status}`);
+      if (!response.ok) {
+        throw new Error(`Pokemon TCG API error: ${response.status}`);
+      }
+
+      cardData = await response.json();
+      
+    } catch (apiErr) {
+      console.error('⚠️ Pokemon API failed:', apiErr.message);
+      apiError = apiErr.message;
+      // נחזיר תוצאה מה-Gemini בלבד
+      return res.status(200).json({
+        records: [{
+          _identification: {
+            pokemon_name: pokemonName,
+            card_number: cardNumber || 'Unknown',
+            set: geminiResult.setName || 'Unknown',
+            rarity: 'Unknown',
+            description: 'זוהה ע"י Gemini, API לא זמין',
+            image: '',
+            prices: {},
+            geminiDetected: geminiResult,
+            apiError: apiError
+          }
+        }]
+      });
     }
-
-    const data = await response.json();
     
     // Clean up
     try { fs.unlinkSync(filepath); } catch (e) {}
 
-    if (!data.data || data.data.length === 0) {
+    if (!cardData.data || cardData.data.length === 0) {
       return res.status(404).json({ 
         error: `לא נמצאו קלפים ל-${pokemonName}`,
         pokemonName: pokemonName,
@@ -174,10 +209,10 @@ export default async function handler(req, res) {
     }
 
     // אם יש מספר קלף, נחפש התאמה
-    let card = data.data[0];
+    let card = cardData.data[0];
     if (cardNumber) {
       const numOnly = cardNumber.split('/')[0]?.trim();
-      const matchingCard = data.data.find(c => c.number === numOnly || c.number === cardNumber);
+      const matchingCard = cardData.data.find(c => c.number === numOnly || c.number === cardNumber);
       if (matchingCard) {
         card = matchingCard;
         console.log('✅ Found exact match:', card.name, '#', card.number);
