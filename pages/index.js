@@ -121,8 +121,9 @@ const pokemonDB = {
 };
 
 export default function Pokedex() {
-  const [view, setView] = useState('closed'); // closed, open, upload, preview, loading, result
+  const [view, setView] = useState('closed');
   const [image, setImage] = useState(null);
+  const [selectedFile, setSelectedFile] = useState(null);
   const [result, setResult] = useState(null);
   const [status, setStatus] = useState('');
   const [error, setError] = useState('');
@@ -141,6 +142,7 @@ export default function Pokedex() {
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
+      setSelectedFile(file);
       const reader = new FileReader();
       reader.onload = (e) => {
         setImage(e.target.result);
@@ -158,11 +160,10 @@ export default function Pokedex() {
     setError('');
 
     try {
-      const file = fileInputRef.current.files[0];
-      if (!file) throw new Error('לא נבחר קובץ');
+      if (!selectedFile) throw new Error('לא נבחר קובץ');
 
       const formData = new FormData();
-      formData.append('file', file);
+      formData.append('file', selectedFile);
 
       setStatus('מעבד תמונה...');
       await new Promise(r => setTimeout(r, 800));
@@ -256,6 +257,7 @@ export default function Pokedex() {
   const reset = () => {
     setView('upload');
     setImage(null);
+    setSelectedFile(null);
     setResult(null);
     setError('');
     setStatus('');
