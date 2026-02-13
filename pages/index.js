@@ -342,7 +342,11 @@ export default function Pokedex() {
                   <div className={styles.resultCard}>
                     {/* Pokemon Image */}
                     <div className={styles.pokemonImageSection}>
-                      <img src={image} alt={result.name} className={styles.pokemonImage} />
+                      {result.image ? (
+                        <img src={result.image} alt={result.name} className={styles.pokemonImage} />
+                      ) : (
+                        <img src={image} alt={result.name} className={styles.pokemonImage} />
+                      )}
                       <div className={styles.imageOverlay}></div>
                     </div>
 
@@ -393,6 +397,30 @@ export default function Pokedex() {
                       <span className={styles.valueLabel}>ערך משוער</span>
                       <span className={styles.valueAmount}>₪{result.value.toLocaleString()}</span>
                     </div>
+                    
+                    {/* פירוט מחירים */}
+                    {result.prices && (result.prices.cardmarket || result.prices.tcgplayer) && (
+                      <div className={styles.priceDetails}>
+                        {result.prices.cardmarket?.trend && (
+                          <div className={styles.priceRow}>
+                            <span>Cardmarket Trend:</span>
+                            <span>€{result.prices.cardmarket.trend}</span>
+                          </div>
+                        )}
+                        {result.prices.tcgplayer?.marketPrice && (
+                          <div className={styles.priceRow}>
+                            <span>TCGplayer Market:</span>
+                            <span>${result.prices.tcgplayer.marketPrice}</span>
+                          </div>
+                        )}
+                        {result.prices.tcgplayer?.lowPrice && (
+                          <div className={styles.priceRow}>
+                            <span>Low-High:</span>
+                            <span>${result.prices.tcgplayer.lowPrice} - ${result.prices.tcgplayer.highPrice}</span>
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
 
                   {/* Tips */}

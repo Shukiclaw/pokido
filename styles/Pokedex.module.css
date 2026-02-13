@@ -712,6 +712,20 @@ html, body {
   color: #8B4513;
 }
 
+.priceDetails {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px dashed rgba(139, 69, 19, 0.3);
+  font-size: 0.75rem;
+  color: #5D3500;
+}
+
+.priceRow {
+  display: flex;
+  justify-content: space-between;
+  margin: 3px 0;
+}
+
 /* Tips Section */
 .tipsSection {
   background: rgba(0,0,0,0.1);
