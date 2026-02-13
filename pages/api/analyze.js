@@ -126,7 +126,25 @@ async function getPokemonCardTCGdex(pokemonName, cardNumber, isJapanese = false)
         selectedCard = matchingCards[0];
         console.log('✅ Found single match:', selectedCard.id);
       } else {
-        console.log('⚠️ No match found for card number:', cardNumber, 'using first result');
+        // לא מצאנו קלף עם המספר הזה - בדיקה אם יש קלף אחר עם אותו שם
+        console.log('⚠️ No card found with number:', cardNum, '- checking other cards with same name...');
+        
+        if (cards.length > 0) {
+          // ננסה למצוא קלף עם מספר דומה (למשל אם Gemini זיהה 99 במקום 92)
+          const alternativeCards = cards.filter(c => {
+            const num = parseInt(c.localId);
+            const targetNum = parseInt(cardNum);
+            // חיפוש מספרים קרובים (±5)
+            return Math.abs(num - targetNum) <= 5;
+          });
+          
+          if (alternativeCards.length > 0) {
+            console.log('🔍 Found alternative cards with similar numbers:', alternativeCards.map(c => c.localId));
+            selectedCard = alternativeCards[0];
+          } else {
+            console.log('⚠️ Using first result');
+          }
+        }
       }
     }
     
@@ -218,24 +236,23 @@ async function analyzeImageWithGemini(imagePath) {
   const base64Image = imageBuffer.toString('base64');
 
   const prompt = `Analyze this Pokemon card image and extract:
-1. Pokemon name - Return the ENGLISH name (e.g., "Yveltal", "Pikachu", "Ninetales", "Alolan Ninetales")
-2. Card number - MUST extract the COMPLETE number as shown on the card (e.g., "132/214", "25/102", "035/064")
-   IMPORTANT: Look carefully at the bottom of the card and extract BOTH numbers separated by slash
+1. Pokemon name - Return the ENGLISH name (e.g., "Yveltal", "Pikachu", "Ninetales", "Alolan Ninetales", "Galarian Slowbro")
+   IMPORTANT: Include the prefix like "Alolan" or "Galarian" if present!
+2. Card number - MUST extract the COMPLETE number as shown on the card (e.g., "132/214", "25/102", "92/163")
+   IMPORTANT: 
+   - Look carefully at the bottom left/right of the card
+   - The format is "XX/YY" where XX is card number, YY is total cards in set
+   - Pay attention: 92 is NOT the same as 99, 82 is NOT the same as 28
+   - Read slowly and carefully - don't confuse similar numbers
 3. Set name if visible
 4. Detect the card language - is it Japanese, English, or other?
-
-The card number is usually at the bottom left or right of the card, formatted like "XX/YY" where:
-- XX = the card's number in the set
-- YY = total number of cards in the set
-
-Example: If you see "132/214", extract exactly "132/214" not just "132"
 
 Return ONLY a JSON object in this exact format:
 {
   "pokemonName": "PokemonName",
-  "cardNumber": "132/214",
+  "cardNumber": "XX/YY",
   "setName": "Set Name",
-  "language": "japanese"
+  "language": "english"
 }
 
 For language detection:
