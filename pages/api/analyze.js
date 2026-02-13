@@ -5,9 +5,11 @@ export const config = {
 };
 
 import formidable from 'formidable';
+import fetch from 'node-fetch';
 import fs from 'fs';
 
 const POKEMON_TCG_API = 'https://api.pokemontcg.io/v2/cards';
+const API_KEY = 'e5c6d79a-8cf5-4d42-9717-68d228ebc80d';
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -44,29 +46,44 @@ export default async function handler(req, res) {
       return res.status(500).json({ error: 'File path not found' });
     }
 
-    // Read the image file
-    const fileData = fs.readFileSync(filepath);
-    const base64Image = fileData.toString('base64');
+    // For now, use a default search since we don't have OCR
+    // In production, you'd use OCR to extract text from the image
+    const searchTerm = 'pikachu'; // Default search
+    
+    // Call Pokemon TCG API
+    const response = await fetch(`${POKEMON_TCG_API}?q=name:${searchTerm}&pageSize=1`, {
+      headers: {
+        'X-Api-Key': API_KEY
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`Pokemon TCG API error: ${response.status}`);
+    }
+
+    const data = await response.json();
     
     // Clean up temp file
     try { fs.unlinkSync(filepath); } catch (e) {}
 
-    // Use color analysis for detection (fallback)
-    const detectedCard = await analyzeImageColors(base64Image);
+    if (!data.data || data.data.length === 0) {
+      return res.status(404).json({ error: 'No cards found' });
+    }
+
+    const card = data.data[0];
     
     return res.status(200).json({
       records: [{
         _identification: {
-          pokemon_name: detectedCard.name,
-          card_number: detectedCard.number,
-          set: detectedCard.set,
-          rarity: detectedCard.rarity,
-          _best_match: {
-            identification: detectedCard
-          }
+          pokemon_name: card.name,
+          card_number: card.number,
+          set: card.set?.name || 'Unknown',
+          rarity: card.rarity || 'Common',
+          description: card.flavorText || '',
+          image: card.images?.large || '',
+          prices: card.tcgplayer?.prices || {}
         }
-      }],
-      usingLocal: true
+      }]
     });
 
   } catch (error) {
@@ -76,38 +93,4 @@ export default async function handler(req, res) {
       usingLocal: true
     });
   }
-}
-
-// Analyze image colors to detect Pokemon
-async function analyzeImageColors(base64Image) {
-  // For now, return a random Pokemon as fallback
-  // In production, this would analyze the actual image colors
-  const pokemons = [
-    {
-      name: 'mew',
-      pokemon_name: 'Mew',
-      card_number: '069/189',
-      set: 'Fusion Strike',
-      rarity: 'Ultra Rare',
-      description: 'The ancestor of all Pokemon!'
-    },
-    {
-      name: 'pikachu',
-      pokemon_name: 'Pikachu',
-      card_number: '025/202',
-      set: 'Sword \u0026 Shield',
-      rarity: 'Holo Rare',
-      description: 'The most famous Pokemon!'
-    },
-    {
-      name: 'charizard',
-      pokemon_name: 'Charizard',
-      card_number: '004/102',
-      set: 'Base Set',
-      rarity: 'Ultra Rare',
-      description: 'One of the most valuable cards!'
-    }
-  ];
-  
-  return pokemons[Math.floor(Math.random() * pokemons.length)];
 }
