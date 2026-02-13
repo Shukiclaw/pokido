@@ -76,6 +76,9 @@ export default function Pokedex() {
   const [error, setError] = useState('');
   const [isScanning, setIsScanning] = useState(false);
   const [showCardModal, setShowCardModal] = useState(false);
+  const [searchMode, setSearchMode] = useState('camera'); // 'camera' or 'manual'
+  const [searchName, setSearchName] = useState('');
+  const [searchNumber, setSearchNumber] = useState('');
   const fileInputRef = useRef(null);
 
   useEffect(() => {
@@ -156,6 +159,57 @@ export default function Pokedex() {
         setIsScanning(false);
         setView('upload');
         alert('❌ ' + err.message + '\n\n' + (language === 'he' ? 'נסה שוב או צלם קלף אחר.' : 'Try again or scan a different card.'));
+      }, 1000);
+    }
+  };
+
+  // חיפוש ידני לפי שם ומספר
+  const searchManual = async () => {
+    if (!searchName.trim()) {
+      alert(language === 'he' ? 'אנא הזן שם פוקימון' : 'Please enter a Pokemon name');
+      return;
+    }
+
+    setView('loading');
+    setIsScanning(true);
+    setStatus(t('identifying'));
+    setError('');
+
+    try {
+      const response = await fetch(`/api/search?name=${encodeURIComponent(searchName)}&number=${encodeURIComponent(searchNumber)}`);
+      
+      let data;
+      try {
+        data = await response.json();
+      } catch (e) {
+        throw new Error(language === 'he' ? 'תשובה לא תקינה מהשרת' : 'Invalid server response');
+      }
+
+      if (!response.ok) {
+        console.error('API Error:', data);
+        throw new Error(data.error || `API Error: ${response.status}`);
+      }
+
+      console.log('✅ API Response:', data);
+      const cardData = parseAPIResponse(data);
+      
+      if (!cardData) {
+        throw new Error(language === 'he' ? 'לא נמצא קלף' : 'Card not found');
+      }
+      
+      setResult(cardData);
+      setIsScanning(false);
+      setView('result');
+
+    } catch (err) {
+      console.error('❌ Error:', err);
+      setError(err.message);
+      setStatus(t('scanFailed'));
+      
+      setTimeout(() => {
+        setIsScanning(false);
+        setView('upload');
+        alert('❌ ' + err.message);
       }, 1000);
     }
   };
@@ -358,19 +412,59 @@ export default function Pokedex() {
 
               {view === 'upload' && (
                 <div className={styles.uploadScreen}>
-                  <label className={styles.cameraCircle}>
-                    <span className={styles.cameraIcon}>📷</span>
-                    <input
-                      ref={fileInputRef}
-                      type="file"
-                      accept="image/*"
-                      capture="environment"
-                      onChange={handleFileChange}
-                      className={styles.hidden}
-                    />
-                  </label>
-                  <p className={styles.uploadText}>{t('uploadTitle')}</p>
-                  <p className={styles.uploadSubtext}>{t('uploadSubtitle')}</p>
+                  {/* Mode Toggle */}
+                  <div className={styles.modeToggle}>
+                    <button 
+                      className={`${styles.modeBtn} ${searchMode === 'camera' ? styles.active : ''}`}
+                      onClick={() => setSearchMode('camera')}
+                    >
+                      📷 {language === 'he' ? 'מצלמה' : 'Camera'}
+                    </button>
+                    <button 
+                      className={`${styles.modeBtn} ${searchMode === 'manual' ? styles.active : ''}`}
+                      onClick={() => setSearchMode('manual')}
+                    >
+                      ⌨️ {language === 'he' ? 'חיפוש' : 'Search'}
+                    </button>
+                  </div>
+
+                  {searchMode === 'camera' ? (
+                    <>
+                      <label className={styles.cameraCircle}>
+                        <span className={styles.cameraIcon}>📷</span>
+                        <input
+                          ref={fileInputRef}
+                          type="file"
+                          accept="image/*"
+                          capture="environment"
+                          onChange={handleFileChange}
+                          className={styles.hidden}
+                        />
+                      </label>
+                      <p className={styles.uploadText}>{t('uploadTitle')}</p>
+                      <p className={styles.uploadSubtext}>{t('uploadSubtitle')}</p>
+                    </>
+                  ) : (
+                    <div className={styles.manualSearch}>
+                      <input
+                        type="text"
+                        placeholder={language === 'he' ? 'שם הפוקימון (למשל: Pikachu)' : 'Pokemon name (e.g., Pikachu)'}
+                        value={searchName}
+                        onChange={(e) => setSearchName(e.target.value)}
+                        className={styles.searchInput}
+                      />
+                      <input
+                        type="text"
+                        placeholder={language === 'he' ? 'מספר קלף (אופציונלי, למשל: 25/102)' : 'Card number (optional, e.g., 25/102)'}
+                        value={searchNumber}
+                        onChange={(e) => setSearchNumber(e.target.value)}
+                        className={styles.searchInput}
+                      />
+                      <button onClick={searchManual} className={styles.searchBtn}>
+                        🔍 {language === 'he' ? 'חפש קלף' : 'Search Card'}
+                      </button>
+                    </div>
+                  )}
                 </div>
               )}
 

@@ -17,6 +17,9 @@ export const translations = {
     // Upload screen
     uploadTitle: 'העלה קלף פוקימון',
     uploadSubtitle: 'לחץ כדי לצלם או לבחור תמונה',
+    camera: 'מצלמה',
+    search: 'חיפוש',
+    searchCard: 'חפש קלף',
     
     // Preview screen
     scan: '🔍 סרוק',
@@ -69,6 +72,9 @@ export const translations = {
     // Upload screen
     uploadTitle: 'Upload Pokemon Card',
     uploadSubtitle: 'Tap to capture or select image',
+    camera: 'Camera',
+    search: 'Search',
+    searchCard: 'Search Card',
     
     // Preview screen
     scan: '🔍 Scan',
