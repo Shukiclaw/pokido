@@ -243,6 +243,7 @@ export default function Pokedex() {
       number: id.set_total ? `#${id.card_number || id.number || '???'}/${id.set_total}` : `#${id.card_number || id.number || '???'}`,
       displayNumber: id.card_number || id.number || '???',
       setTotal: id.set_total,
+      geminiDetected: id.geminiDetected,
       types: id.types || [],
       typeNames: typeNames,
       typeColors: typeColors,
@@ -546,6 +547,21 @@ export default function Pokedex() {
                       </div>
                     )}
                   </div>
+                  
+                  {/* Debug Info - Shows what Gemini detected */}
+                  {result.geminiDetected && (
+                    <div className={styles.debugSection}>
+                      <h4>🔍 Debug (Gemini)</h4>
+                      <div className={styles.debugRow}>
+                        <span>Detected #:</span>
+                        <span>{result.geminiDetected.cardNumber || 'N/A'}</span>
+                      </div>
+                      <div className={styles.debugRow}>
+                        <span>Language:</span>
+                        <span>{result.geminiDetected.language || 'N/A'}</span>
+                      </div>
+                    </div>
+                  )}
                   
                   {/* Card Modal - Full Screen */}
                   {showCardModal && (

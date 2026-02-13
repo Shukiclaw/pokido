@@ -83,31 +83,35 @@ async function getPokemonCardTCGdex(pokemonName, cardNumber, isJapanese = false)
       const setTotal = cardNumMatch ? parseInt(cardNumMatch[2]) : null;
       
       console.log('🔍 Looking for card:', cardNum, 'in set with', setTotal, 'cards');
+      console.log('📊 Available cards with this number:', cards.filter(c => c.localId === cardNum).map(c => ({ id: c.id, set: c.set?.name, total: c.set?.cardCount?.official })));
       
       // נחפש קלף שמתאים גם למספר וגם למספר הסט (אם יש)
-      let matchingCard = cards.find(c => {
-        const numMatch = c.localId === cardNum || c.localId === cardNumber;
-        
-        // אם יש מספר סט, נבדוק גם אותו
-        if (numMatch && setTotal && c.set?.cardCount?.official) {
-          const setMatch = c.set.cardCount.official === setTotal;
-          if (setMatch) {
-            console.log('✅ Found exact match:', c.id, 'set:', c.set.name, 'total:', c.set.cardCount.official);
+      let matchingCard = null;
+      
+      if (setTotal) {
+        // קודם כל נחפש התאמה מדויקת לפי מספר הסט
+        matchingCard = cards.find(c => {
+          const numMatch = c.localId === cardNum;
+          const setMatch = c.set?.cardCount?.official === setTotal || c.set?.cardCount?.total === setTotal;
+          if (numMatch && setMatch) {
+            console.log('✅ Found exact match by set total:', c.id, 'set:', c.set.name, 'official:', c.set.cardCount?.official, 'total:', c.set.cardCount?.total);
             return true;
           }
-        }
-        
-        return numMatch;
-      });
+          return false;
+        });
+      }
       
       // אם לא מצאנו התאמה מדויקת עם מספר הסט, ניקח את התאמה רק לפי מספר הקלף
       if (!matchingCard) {
-        matchingCard = cards.find(c => c.localId === cardNum || c.localId === cardNumber);
+        matchingCard = cards.find(c => c.localId === cardNum);
+        if (matchingCard) {
+          console.log('⚠️ Found match by card number only:', matchingCard.id, 'set:', matchingCard.set?.name);
+        }
       }
       
       if (matchingCard) {
         selectedCard = matchingCard;
-        console.log('✅ Matched card:', selectedCard.id, 'from set:', selectedCard.set?.name);
+        console.log('✅ Selected card:', selectedCard.id, 'from set:', selectedCard.set?.name);
       } else {
         console.log('⚠️ No match found for card number:', cardNumber, 'using first result');
       }
@@ -201,17 +205,22 @@ async function analyzeImageWithGemini(imagePath) {
   const base64Image = imageBuffer.toString('base64');
 
   const prompt = `Analyze this Pokemon card image and extract:
-1. Pokemon name - Return the ENGLISH name (e.g., "Yveltal", "Pikachu", "Ninetales")
-2. Card number if visible (e.g., "25/102", "18/70", "035/064")
-3. Set name if visible (in any language)
+1. Pokemon name - Return the ENGLISH name (e.g., "Yveltal", "Pikachu", "Ninetales", "Alolan Ninetales")
+2. Card number - MUST extract the COMPLETE number as shown on the card (e.g., "132/214", "25/102", "035/064")
+   IMPORTANT: Look carefully at the bottom of the card and extract BOTH numbers separated by slash
+3. Set name if visible
 4. Detect the card language - is it Japanese, English, or other?
 
-The card may be in Japanese (with characters like イベルタル, ピカチュウ), English, or other languages. 
+The card number is usually at the bottom left or right of the card, formatted like "XX/YY" where:
+- XX = the card's number in the set
+- YY = total number of cards in the set
+
+Example: If you see "132/214", extract exactly "132/214" not just "132"
 
 Return ONLY a JSON object in this exact format:
 {
   "pokemonName": "PokemonName",
-  "cardNumber": "XX/YY",
+  "cardNumber": "132/214",
   "setName": "Set Name",
   "language": "japanese"
 }
