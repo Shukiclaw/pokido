@@ -8,24 +8,22 @@ import formidable from 'formidable';
 import fetch from 'node-fetch';
 import fs from 'fs';
 
-const POKEMON_TCG_API = 'https://api.pokemontcg.io/v2/cards';
+const TCGDEX_API = 'https://api.tcgdex.net/v2/en';
 
 // משתני סביבה
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-const POKEMON_TCG_API_KEY = process.env.POKEMON_TCG_API_KEY;
 
-// קריאה ל-Pokemon TCG API - מנסה כמה שיטות
-async function getPokemonCard(pokemonName, cardNumber) {
-  // שיטה 1: חיפוש פשוט לפי שם בלבד
-  const simpleQuery = `${POKEMON_TCG_API}?q=name:${encodeURIComponent(pokemonName)}&pageSize=5`;
-  console.log('🌐 Trying simple query:', simpleQuery);
-  
+// קריאה ל-TCGdex API - מהיר ואמין!
+async function getPokemonCardTCGdex(pokemonName, cardNumber) {
   try {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 6000);
+    // חיפוש לפי שם
+    const searchUrl = `${TCGDEX_API}/cards?name=${encodeURIComponent(pokemonName.toLowerCase())}`;
+    console.log('🌐 TCGdex search:', searchUrl);
     
-    const response = await fetch(simpleQuery, {
-      headers: POKEMON_TCG_API_KEY ? { 'X-Api-Key': POKEMON_TCG_API_KEY } : {},
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000);
+    
+    const response = await fetch(searchUrl, {
       signal: controller.signal
     });
     
@@ -35,13 +33,71 @@ async function getPokemonCard(pokemonName, cardNumber) {
       throw new Error(`HTTP ${response.status}`);
     }
     
-    const data = await response.json();
-    return data;
+    const cards = await response.json();
+    console.log(`✅ Found ${cards.length} cards`);
+    
+    if (!cards || cards.length === 0) {
+      return null;
+    }
+    
+    // אם יש מספר קלף, נחפש התאמה
+    let selectedCard = cards[0];
+    
+    if (cardNumber) {
+      const numOnly = cardNumber.split('/')[0]?.trim();
+      const matchingCard = cards.find(c => 
+        c.localId === numOnly || 
+        c.localId === cardNumber ||
+        c.id?.includes(numOnly)
+      );
+      
+      if (matchingCard) {
+        selectedCard = matchingCard;
+        console.log('✅ Matched card number:', selectedCard.localId);
+      }
+    }
+    
+    // קבלת פרטים מלאים על הקלף
+    const detailUrl = `${TCGDEX_API}/cards/${selectedCard.id}`;
+    console.log('🌐 Getting details:', detailUrl);
+    
+    const detailResponse = await fetch(detailUrl, {
+      signal: controller.signal
+    });
+    
+    if (!detailResponse.ok) {
+      // אם אין פרטים מלאים, נשתמש במה שיש
+      return formatCardData(selectedCard);
+    }
+    
+    const fullCard = await detailResponse.json();
+    return formatCardData(fullCard);
     
   } catch (err) {
-    console.error('⚠️ Simple query failed:', err.message);
+    console.error('⚠️ TCGdex API failed:', err.message);
     return null;
   }
+}
+
+// המרת נתוני TCGdex לפורמט שלנו
+function formatCardData(card) {
+  return {
+    name: card.name,
+    number: card.localId || card.id,
+    set: card.set?.name || 'Unknown',
+    rarity: card.rarity || 'Common',
+    hp: card.hp,
+    types: card.types,
+    description: card.flavorText || '',
+    image: card.image || `https://assets.tcgdex.net/en/${card.set?.id?.replace('-', '/')}/${card.localId}`,
+    prices: {
+      cardmarket: card.pricing?.cardmarket,
+      tcgplayer: card.pricing?.tcgplayer
+    },
+    attacks: card.attacks,
+    weaknesses: card.weaknesses,
+    illustrator: card.illustrator
+  };
 }
 
 async function analyzeImageWithGemini(imagePath) {
@@ -49,13 +105,12 @@ async function analyzeImageWithGemini(imagePath) {
     throw new Error('GEMINI_API_KEY not configured');
   }
 
-  // קריאת התמונה כ-base64
   const imageBuffer = fs.readFileSync(imagePath);
   const base64Image = imageBuffer.toString('base64');
 
   const prompt = `Analyze this Pokemon card image and extract:
-1. Pokemon name (exact name, e.g., "Pikachu", "Charizard", "Mew")
-2. Card number if visible (e.g., "25/102")
+1. Pokemon name (exact name, e.g., "Pikachu", "Charizard", "Mew", "Kingdra GX")
+2. Card number if visible (e.g., "25/102", "18/70")
 3. Set name if visible
 
 Return ONLY a JSON object in this exact format:
@@ -107,7 +162,6 @@ If any field is not found, use null.`;
 
   const text = data.candidates[0].content.parts[0].text;
   
-  // חילוץ JSON מהתשובה
   const jsonMatch = text.match(/\{[\s\S]*\}/);
   if (!jsonMatch) {
     throw new Error('Could not parse Gemini response');
@@ -153,10 +207,8 @@ export default async function handler(req, res) {
 
     console.log('🤖 Analyzing with Gemini...');
     
-    // Gemini OCR
     const geminiResult = await analyzeImageWithGemini(filepath);
     console.log('✅ Gemini result:', geminiResult);
-    console.log('📝 Raw Gemini text:', JSON.stringify(geminiResult));
 
     const pokemonName = geminiResult.pokemonName;
     const cardNumber = geminiResult.cardNumber;
@@ -171,15 +223,15 @@ export default async function handler(req, res) {
 
     console.log(`🎯 Found: ${pokemonName}, Card #${cardNumber || 'unknown'}`);
 
-    // קריאה ל-Pokemon TCG API
-    const cardData = await getPokemonCard(pokemonName, cardNumber);
+    // קריאה ל-TCGdex API
+    const cardData = await getPokemonCardTCGdex(pokemonName, cardNumber);
     
     // Clean up
     try { fs.unlinkSync(filepath); } catch (e) {}
     
     // אם ה-API נכשל - מחזירים נתוני Gemini בלבד
     if (!cardData) {
-      console.log('⚠️ Using Gemini data only (API failed)');
+      console.log('⚠️ Using Gemini data only (TCGdex failed)');
       return res.status(200).json({
         records: [{
           _identification: {
@@ -187,7 +239,7 @@ export default async function handler(req, res) {
             card_number: cardNumber || 'Unknown',
             set: geminiResult.setName || 'Unknown',
             rarity: 'Unknown',
-            description: 'זוהה ע"י Gemini, Pokemon API לא זמין',
+            description: 'זוהה ע"י Gemini, API לא זמין',
             image: '',
             prices: {},
             geminiDetected: geminiResult,
@@ -197,40 +249,21 @@ export default async function handler(req, res) {
         }]
       });
     }
-
-    if (!cardData.data || cardData.data.length === 0) {
-      return res.status(404).json({ 
-        error: `לא נמצאו קלפים ל-${pokemonName}`,
-        pokemonName: pokemonName,
-        cardNumber: cardNumber,
-        geminiResult: geminiResult,
-        apiQuery: searchQuery
-      });
-    }
-
-    // אם יש מספר קלף, נחפש התאמה
-    let card = cardData.data[0];
-    if (cardNumber) {
-      const numOnly = cardNumber.split('/')[0]?.trim();
-      const matchingCard = cardData.data.find(c => c.number === numOnly || c.number === cardNumber);
-      if (matchingCard) {
-        card = matchingCard;
-        console.log('✅ Found exact match:', card.name, '#', card.number);
-      }
-    }
     
     return res.status(200).json({
       records: [{
         _identification: {
-          pokemon_name: card.name,
-          card_number: card.number,
-          set: card.set?.name || 'Unknown',
-          rarity: card.rarity || 'Common',
-          description: card.flavorText || '',
-          image: card.images?.large || '',
-          prices: card.tcgplayer?.prices || {},
-          hp: card.hp,
-          types: card.types,
+          pokemon_name: cardData.name,
+          card_number: cardData.number,
+          set: cardData.set,
+          rarity: cardData.rarity,
+          description: cardData.description,
+          image: cardData.image,
+          prices: cardData.prices,
+          hp: cardData.hp,
+          types: cardData.types,
+          attacks: cardData.attacks,
+          illustrator: cardData.illustrator,
           geminiDetected: geminiResult
         }
       }]
