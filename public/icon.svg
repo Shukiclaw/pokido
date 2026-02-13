@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="redGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#ff4444"/>
+      <stop offset="100%" style="stop-color:#cc0000"/>
+    </linearGradient>
+    <linearGradient id="whiteGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#ffffff"/>
+      <stop offset="100%" style="stop-color:#e0e0e0"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Background Circle -->
+  <circle cx="256" cy="256" r="240" fill="#DC0A2D"/>
+  
+  <!-- White Bottom Half -->
+  <path d="M 256 256 L 496 256 A 240 240 0 0 1 16 256 Z" fill="url(#whiteGrad)"/>
+  
+  <!-- Center Band -->
+  <rect x="16" y="236" width="480" height="40" fill="#333"/>
+  
+  <!-- Center Button -->
+  <circle cx="256" cy="256" r="70" fill="#333"/>
+  <circle cx="256" cy="256" r="55" fill="white"/>
+  <circle cx="256" cy="256" r="40" fill="url(#whiteGrad)"/>
+  <circle cx="256" cy="256" r="25" fill="#f0f0f0"/>
+  
+  <!-- Highlight -->
+  <ellipse cx="200" cy="150" rx="60" ry="30" fill="white" opacity="0.3"/>
+</svg>

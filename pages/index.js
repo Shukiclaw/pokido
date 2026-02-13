@@ -350,6 +350,13 @@ export default function Pokedex() {
       <Head>
         <title>Pokido - {language === 'he' ? 'פוקידו' : 'Pokido'}</title>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="description" content="Scan and identify Pokemon cards with AI" />
+        <meta name="theme-color" content="#DC0A2D" />
+        <link rel="manifest" href="/manifest.json" />
+        <link rel="apple-touch-icon" href="/icon-192x192.png" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <meta name="apple-mobile-web-app-title" content="Pokido" />
         <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;700;900&display=swap" rel="stylesheet" />
       </Head>
 
@@ -643,21 +650,6 @@ export default function Pokedex() {
                       </div>
                     )}
                   </div>
-                  
-                  {/* Debug Info - Shows what Gemini detected */}
-                  {result.geminiDetected && (
-                    <div className={styles.debugSection}>
-                      <h4>🔍 Debug (Gemini)</h4>
-                      <div className={styles.debugRow}>
-                        <span>Detected #:</span>
-                        <span>{result.geminiDetected.cardNumber || 'N/A'}</span>
-                      </div>
-                      <div className={styles.debugRow}>
-                        <span>Language:</span>
-                        <span>{result.geminiDetected.language || 'N/A'}</span>
-                      </div>
-                    </div>
-                  )}
                   
                   {/* Card Modal - Full Screen */}
                   {showCardModal && (
