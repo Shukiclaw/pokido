@@ -1,6 +1,6 @@
 /* Pokido - Authentic Pokedex Design */
 
-:root {
+.container {
   --pokedex-red: #DC0A2D;
   --pokedex-dark-red: #9B0B2E;
   --pokedex-shadow: #8B0000;
@@ -11,12 +11,6 @@
   --button-yellow: #FFDE00;
   --hinge-color: #5A0000;
   --border-dark: #1D1D1D;
-}
-
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
 }
 
 html, body {
