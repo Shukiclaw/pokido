@@ -7,12 +7,84 @@ export const config = {
 import formidable from 'formidable';
 import fetch from 'node-fetch';
 import fs from 'fs';
-import Tesseract from 'tesseract.js';
 
 const POKEMON_TCG_API = 'https://api.pokemontcg.io/v2/cards';
 
-// קריאת מפתח מהמשתנה סביבה
-const API_KEY = process.env.POKEMON_TCG_API_KEY;
+// משתני סביבה
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+const POKEMON_TCG_API_KEY = process.env.POKEMON_TCG_API_KEY;
+
+async function analyzeImageWithGemini(imagePath) {
+  if (!GEMINI_API_KEY) {
+    throw new Error('GEMINI_API_KEY not configured');
+  }
+
+  // קריאת התמונה כ-base64
+  const imageBuffer = fs.readFileSync(imagePath);
+  const base64Image = imageBuffer.toString('base64');
+
+  const prompt = `Analyze this Pokemon card image and extract:
+1. Pokemon name (exact name, e.g., "Pikachu", "Charizard", "Mew")
+2. Card number if visible (e.g., "25/102")
+3. Set name if visible
+
+Return ONLY a JSON object in this exact format:
+{
+  "pokemonName": "PokemonName",
+  "cardNumber": "XX/YY",
+  "setName": "Set Name"
+}
+
+If any field is not found, use null.`;
+
+  const response = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        contents: [{
+          parts: [
+            { text: prompt },
+            {
+              inline_data: {
+                mime_type: 'image/jpeg',
+                data: base64Image
+              }
+            }
+          ]
+        }],
+        generationConfig: {
+          temperature: 0.1,
+          maxOutputTokens: 256
+        }
+      })
+    }
+  );
+
+  if (!response.ok) {
+    const error = await response.text();
+    throw new Error(`Gemini API error: ${response.status} - ${error}`);
+  }
+
+  const data = await response.json();
+  
+  if (!data.candidates || !data.candidates[0]?.content?.parts?.[0]?.text) {
+    throw new Error('No response from Gemini');
+  }
+
+  const text = data.candidates[0].content.parts[0].text;
+  
+  // חילוץ JSON מהתשובה
+  const jsonMatch = text.match(/\{[\s\S]*\}/);
+  if (!jsonMatch) {
+    throw new Error('Could not parse Gemini response');
+  }
+
+  return JSON.parse(jsonMatch[0]);
+}
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -49,89 +121,40 @@ export default async function handler(req, res) {
       return res.status(500).json({ error: 'File path not found' });
     }
 
-    console.log('🔍 Starting OCR...');
+    console.log('🤖 Analyzing with Gemini...');
     
-    // OCR - קריאת טקסט מהתמונה
-    const ocrResult = await Tesseract.recognize(filepath, 'eng', {
-      logger: m => {
-        if (m.status === 'recognizing text') {
-          console.log(`OCR Progress: ${Math.round(m.progress * 100)}%`);
-        }
-      }
-    });
+    // Gemini OCR
+    const geminiResult = await analyzeImageWithGemini(filepath);
+    console.log('✅ Gemini result:', geminiResult);
 
-    const ocrText = ocrResult.data.text;
-    console.log('📝 OCR Text:', ocrText);
-
-    // ניקוי ועיבוד הטקסט
-    const lines = ocrText.split('\n').map(l => l.trim()).filter(l => l.length > 0);
-    console.log('📋 Lines:', lines);
-
-    // חיפוש שם הפוקימון והמספר
-    let pokemonName = null;
-    let cardNumber = null;
-    
-    // רשימת פוקימונים נפוצים לחיפוש
-    const commonPokemon = ['pikachu', 'charizard', 'mew', 'mewtwo', 'blastoise', 'venusaur', 
-      'charmander', 'squirtle', 'bulbasaur', 'eevee', 'snorlax', 'gengar', 'dragonite',
-      'lugia', 'rayquaza', 'groudon', 'kyogre', 'dialga', 'palkia', 'giratina',
-      'arceus', 'zekrom', 'reshiram', 'kyurem', 'xerneas', 'yveltal', 'zygarde',
-      'solgaleo', 'lunala', 'necrozma', 'zacian', 'zamazenta', 'eternatus'];
-    
-    // חיפוש שם בטקסט
-    const lowerText = ocrText.toLowerCase();
-    for (const pokemon of commonPokemon) {
-      if (lowerText.includes(pokemon)) {
-        pokemonName = pokemon;
-        break;
-      }
-    }
-    
-    // אם לא נמצא, ננסה לקחת את השורה הראשונה שאינה "basic" או "stage"
-    if (!pokemonName && lines.length > 0) {
-      for (const line of lines) {
-        const lowerLine = line.toLowerCase();
-        if (lowerLine.length > 2 && 
-            !lowerLine.includes('basic') && 
-            !lowerLine.includes('stage') &&
-            !lowerLine.includes('hp') &&
-            !lowerLine.includes('evolves') &&
-            !/^\d+$/.test(line)) {
-          pokemonName = line.replace(/[^a-zA-Z\s-]/g, '').trim().toLowerCase();
-          break;
-        }
-      }
-    }
-    
-    // חיפוש מספר קלף (בד"כ בפורמט XXX/YYY)
-    const numberMatch = ocrText.match(/(\d+)\s*\/\s*(\d+)/);
-    if (numberMatch) {
-      cardNumber = numberMatch[1];
-    }
+    const pokemonName = geminiResult.pokemonName;
+    const cardNumber = geminiResult.cardNumber;
 
     if (!pokemonName) {
-      // Clean up
       try { fs.unlinkSync(filepath); } catch (e) {}
       return res.status(400).json({ 
         error: 'לא זוהה שם פוקימון בתמונה',
-        ocrText: ocrText
+        geminiResult: geminiResult
       });
     }
 
     console.log(`🎯 Found: ${pokemonName}, Card #${cardNumber || 'unknown'}`);
 
-    // קריאה ל-API
+    // קריאה ל-Pokemon TCG API
     let searchQuery = `name:${pokemonName}`;
     if (cardNumber) {
-      searchQuery += ` number:${cardNumber}`;
+      const numOnly = cardNumber.split('/')[0];
+      if (numOnly) {
+        searchQuery += ` number:${numOnly}`;
+      }
     }
 
     const apiUrl = `${POKEMON_TCG_API}?q=${encodeURIComponent(searchQuery)}&pageSize=10`;
-    console.log('🌐 API URL:', apiUrl);
+    console.log('🌐 Pokemon API:', apiUrl);
     
     const headers = {};
-    if (API_KEY) {
-      headers['X-Api-Key'] = API_KEY;
+    if (POKEMON_TCG_API_KEY) {
+      headers['X-Api-Key'] = POKEMON_TCG_API_KEY;
     }
     
     const response = await fetch(apiUrl, { headers });
@@ -150,7 +173,7 @@ export default async function handler(req, res) {
         error: `לא נמצאו קלפים ל-${pokemonName}`,
         pokemonName: pokemonName,
         cardNumber: cardNumber,
-        ocrText: ocrText
+        geminiResult: geminiResult
       });
     }
 
@@ -168,11 +191,7 @@ export default async function handler(req, res) {
           prices: card.tcgplayer?.prices || {},
           hp: card.hp,
           types: card.types,
-          ocrDetected: {
-            name: pokemonName,
-            number: cardNumber,
-            rawText: ocrText.substring(0, 200)
-          }
+          geminiDetected: geminiResult
         }
       }]
     });
