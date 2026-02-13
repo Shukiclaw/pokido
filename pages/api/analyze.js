@@ -78,8 +78,9 @@ async function getPokemonCardTCGdex(pokemonName, cardNumber, isJapanese = false)
     
     if (cardNumber) {
       // חילוץ מספר הקלף ומספר הסט (למשל "132/214" → cardNum=132, setTotal=214)
+      // טיפול במספרים עם אפסים מקדימים (099 → 99)
       const cardNumMatch = cardNumber.match(/(\d+)\s*\/\s*(\d+)/);
-      const cardNum = cardNumMatch ? cardNumMatch[1] : cardNumber;
+      const cardNum = cardNumMatch ? String(parseInt(cardNumMatch[1])) : String(parseInt(cardNumber));
       const setTotal = cardNumMatch ? parseInt(cardNumMatch[2]) : null;
       
       console.log('🔍 Looking for card:', cardNum, 'in set with', setTotal, 'cards');
