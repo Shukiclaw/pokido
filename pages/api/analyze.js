@@ -8,7 +8,8 @@ import formidable from 'formidable';
 import fetch from 'node-fetch';
 import fs from 'fs';
 
-const TCGDEX_API = 'https://api.tcgdex.net/v2/en';
+const TCGDEX_API_EN = 'https://api.tcgdex.net/v2/en';
+const TCGDEX_API_JA = 'https://api.tcgdex.net/v2/ja';
 
 // משתני סביבה
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
@@ -44,11 +45,13 @@ async function getImageFromPokemonTCG(name, number) {
 }
 
 // קריאה ל-TCGdex API - מהיר ואמין!
-async function getPokemonCardTCGdex(pokemonName, cardNumber) {
+async function getPokemonCardTCGdex(pokemonName, cardNumber, isJapanese = false) {
+  const apiBase = isJapanese ? TCGDEX_API_JA : TCGDEX_API_EN;
+  
   try {
     // חיפוש לפי שם
-    const searchUrl = `${TCGDEX_API}/cards?name=${encodeURIComponent(pokemonName.toLowerCase())}`;
-    console.log('🌐 TCGdex search:', searchUrl);
+    const searchUrl = `${apiBase}/cards?name=${encodeURIComponent(pokemonName.toLowerCase())}`;
+    console.log('🌐 TCGdex search:', searchUrl, isJapanese ? '(Japanese)' : '(English)');
     
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 שניות
@@ -111,7 +114,7 @@ async function getPokemonCardTCGdex(pokemonName, cardNumber) {
     }
     
     // קבלת פרטים מלאים על הקלף
-    const detailUrl = `${TCGDEX_API}/cards/${selectedCard.id}`;
+    const detailUrl = `${apiBase}/cards/${selectedCard.id}`;
     console.log('🌐 Getting details:', detailUrl);
     
     const detailResponse = await fetch(detailUrl, {
@@ -120,11 +123,11 @@ async function getPokemonCardTCGdex(pokemonName, cardNumber) {
     
     if (!detailResponse.ok) {
       // אם אין פרטים מלאים, נשתמש במה שיש
-      return await formatCardData(selectedCard);
+      return await formatCardData(selectedCard, isJapanese);
     }
     
     const fullCard = await detailResponse.json();
-    return await formatCardData(fullCard);
+    return await formatCardData(fullCard, isJapanese);
     
   } catch (err) {
     console.error('⚠️ TCGdex API failed:', err.message);
@@ -133,7 +136,7 @@ async function getPokemonCardTCGdex(pokemonName, cardNumber) {
 }
 
 // המרת נתוני TCGdex לפורמט שלנו
-async function formatCardData(card) {
+async function formatCardData(card, isJapanese = false) {
   // בניית כתובת תמונה נכונה
   // TCGdex מחזיר image בלי /high.png - צריך להוסיף!
   let imageUrl = card.image;
@@ -153,11 +156,14 @@ async function formatCardData(card) {
   if (!imageUrl && card.set?.id) {
     const setId = card.set.id.replace(/\./g, ''); // מסיר נקודות
     const series = setId.replace(/\d+$/, ''); // מספרי הסדרה
-    imageUrl = `https://assets.tcgdex.net/en/${series}/${setId}/${card.localId}/high.png`;
+    const lang = isJapanese ? 'ja' : 'en';
+    imageUrl = `https://assets.tcgdex.net/${lang}/${series}/${setId}/${card.localId}/high.png`;
   }
   
   return {
     name: card.name,
+    nameEn: card.name, // שם באנגלית (או יפנית לפי השפה)
+    nameJa: isJapanese ? card.name : null,
     number: card.localId || card.id,
     set: card.set?.name || 'Unknown',
     setId: card.set?.id,
@@ -167,6 +173,7 @@ async function formatCardData(card) {
     description: card.flavorText || '',
     image: imageUrl,
     highResImage: card.image,
+    isJapanese: isJapanese,
     prices: {
       cardmarket: card.pricing?.cardmarket,
       tcgplayer: card.pricing?.tcgplayer
@@ -193,18 +200,25 @@ async function analyzeImageWithGemini(imagePath) {
   const base64Image = imageBuffer.toString('base64');
 
   const prompt = `Analyze this Pokemon card image and extract:
-1. Pokemon name - Return the ENGLISH name even if the card is in Japanese or other language (e.g., Japanese "イベルタル" should return "Yveltal", "ピカチュウ" should return "Pikachu")
+1. Pokemon name - Return the ENGLISH name (e.g., "Yveltal", "Pikachu", "Ninetales")
 2. Card number if visible (e.g., "25/102", "18/70", "035/064")
 3. Set name if visible (in any language)
+4. Detect the card language - is it Japanese, English, or other?
 
-The card may be in Japanese, English, or other languages. Always identify the Pokemon and return its English name.
+The card may be in Japanese (with characters like イベルタル, ピカチュウ), English, or other languages. 
 
 Return ONLY a JSON object in this exact format:
 {
   "pokemonName": "PokemonName",
   "cardNumber": "XX/YY",
-  "setName": "Set Name"
+  "setName": "Set Name",
+  "language": "japanese" | "english" | "other"
 }
+
+For language detection:
+- If card has Japanese characters (hiragana, katakana, kanji), use "japanese"
+- If card is in English, use "english"
+- Otherwise use "other"
 
 If any field is not found, use null.`;
 
@@ -298,6 +312,7 @@ export default async function handler(req, res) {
 
     const pokemonName = geminiResult.pokemonName;
     const cardNumber = geminiResult.cardNumber;
+    const isJapanese = geminiResult.language === 'japanese';
 
     if (!pokemonName) {
       try { fs.unlinkSync(filepath); } catch (e) {}
@@ -307,10 +322,10 @@ export default async function handler(req, res) {
       });
     }
 
-    console.log(`🎯 Found: ${pokemonName}, Card #${cardNumber || 'unknown'}`);
+    console.log(`🎯 Found: ${pokemonName}, Card #${cardNumber || 'unknown'}, Language: ${geminiResult.language || 'unknown'}`);
 
     // קריאה ל-TCGdex API
-    const cardData = await getPokemonCardTCGdex(pokemonName, cardNumber);
+    const cardData = await getPokemonCardTCGdex(pokemonName, cardNumber, isJapanese);
     
     // Clean up
     try { fs.unlinkSync(filepath); } catch (e) {}
@@ -338,6 +353,7 @@ export default async function handler(req, res) {
           types: cardData.types,
           attacks: cardData.attacks,
           illustrator: cardData.illustrator,
+          isJapanese: cardData.isJapanese,
           geminiDetected: geminiResult
         }
       }]
