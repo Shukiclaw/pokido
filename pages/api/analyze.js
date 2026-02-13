@@ -120,14 +120,11 @@ async function formatCardData(card) {
     imageUrl = await getImageFromPokemonTCG(card.name, card.localId);
   }
   
-  // אם עדיין אין, נבנה URL לפי פורמט TCGdex
+  // אם עדיין אין, נבנה URL לפי פורמט TCGdex (בלי נקודות בסט)
   if (!imageUrl && card.set?.id) {
-    const setParts = card.set.id.split('-');
-    if (setParts.length >= 2) {
-      const series = setParts[0];
-      const set = card.set.id;
-      imageUrl = `https://assets.tcgdex.net/en/${series}/${set}/${card.localId}/high.png`;
-    }
+    const setId = card.set.id.replace(/\./g, ''); // מסיר נקודות
+    const series = setId.replace(/\d+$/, ''); // מספרי הסדרה
+    imageUrl = `https://assets.tcgdex.net/en/${series}/${setId}/${card.localId}/high.png`;
   }
   
   return {
