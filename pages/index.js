@@ -175,8 +175,6 @@ export default function Pokedex() {
         body: formData
       });
 
-      setStatus('מקבל תוצאות...');
-
       let data;
       try {
         data = await response.json();
@@ -184,13 +182,19 @@ export default function Pokedex() {
         throw new Error('תשובה לא תקינה מהשרת');
       }
 
-      if (!response.ok) {
+      // Check if API returned error with fallback flag
+      if (!response.ok || data.usingLocal) {
         console.error('API Error:', data);
-        throw new Error(data.error || `שגיאת API: ${response.status}`);
+        throw new Error(data.error || data.message || `שגיאת API: ${response.status}`);
       }
 
       console.log('✅ Ximilar Response:', data);
       const cardData = parseXimilarResponse(data);
+      
+      if (!cardData) {
+        throw new Error('לא ניתן לזהות את הקלף');
+      }
+      
       setResult(cardData);
       setIsScanning(false);
       setView('result');
@@ -198,6 +202,17 @@ export default function Pokedex() {
     } catch (err) {
       console.error('❌ Error:', err);
       setError(err.message);
+      
+      // Check if it's a configuration error
+      if (err.message.includes('not configured') || err.message.includes('XIMILAR_TOKEN')) {
+        setStatus('⚠️ API לא מוגדר');
+        setTimeout(() => {
+          setView('upload');
+          alert('⚠️ חסר API Token!\n\nנא להוסיף XIMILAR_TOKEN ב-Vercel dashboard:\nSettings → Environment Variables');
+        }, 1000);
+        return;
+      }
+      
       setStatus('משתמש בזיהוי מקומי...');
       
       setTimeout(() => {
