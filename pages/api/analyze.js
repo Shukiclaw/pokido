@@ -112,7 +112,13 @@ async function getPokemonCardTCGdex(pokemonName, cardNumber) {
 // המרת נתוני TCGdex לפורמט שלנו
 async function formatCardData(card) {
   // בניית כתובת תמונה נכונה
+  // TCGdex מחזיר image בלי /high.png - צריך להוסיף!
   let imageUrl = card.image;
+  
+  if (imageUrl && !imageUrl.endsWith('/high.png')) {
+    imageUrl = `${imageUrl}/high.png`;
+    console.log('🖼️ Fixed image URL:', imageUrl);
+  }
   
   // אם אין תמונה, ננסה Pokemon TCG API
   if (!imageUrl) {
