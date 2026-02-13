@@ -212,7 +212,7 @@ Return ONLY a JSON object in this exact format:
   "pokemonName": "PokemonName",
   "cardNumber": "XX/YY",
   "setName": "Set Name",
-  "language": "japanese" | "english" | "other"
+  "language": "japanese"
 }
 
 For language detection:
@@ -261,13 +261,36 @@ If any field is not found, use null.`;
   }
 
   const text = data.candidates[0].content.parts[0].text;
+  console.log('📝 Raw Gemini response:', text);
   
-  const jsonMatch = text.match(/\{[\s\S]*\}/);
+  // Try to extract JSON more robustly
+  let jsonMatch = text.match(/\{[\s\S]*\}/);
   if (!jsonMatch) {
-    throw new Error('Could not parse Gemini response');
+    // Try to find JSON in markdown code blocks
+    const codeBlockMatch = text.match(/```(?:json)?\s*([\s\S]*?)```/);
+    if (codeBlockMatch) {
+      jsonMatch = codeBlockMatch[1].match(/\{[\s\S]*\}/);
+    }
+  }
+  
+  if (!jsonMatch) {
+    throw new Error('Could not parse Gemini response: ' + text.substring(0, 200));
   }
 
-  return JSON.parse(jsonMatch[0]);
+  try {
+    const result = JSON.parse(jsonMatch[0]);
+    console.log('✅ Parsed Gemini result:', result);
+    
+    // Ensure language field exists with a default
+    if (!result.language) {
+      result.language = 'english';
+      console.log('⚠️ Language not detected, defaulting to english');
+    }
+    
+    return result;
+  } catch (parseError) {
+    throw new Error(`JSON parse error: ${parseError.message}. Raw text: ${jsonMatch[0].substring(0, 200)}`);
+  }
 }
 
 export default async function handler(req, res) {
