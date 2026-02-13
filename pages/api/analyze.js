@@ -83,18 +83,28 @@ async function getPokemonCardTCGdex(pokemonName, cardNumber, isJapanese = false)
       const setTotal = cardNumMatch ? parseInt(cardNumMatch[2]) : null;
       
       console.log('🔍 Looking for card:', cardNum, 'in set with', setTotal, 'cards');
-      console.log('📊 Available cards with this number:', cards.filter(c => c.localId === cardNum).map(c => ({ id: c.id, set: c.set?.name, total: c.set?.cardCount?.official })));
+      console.log('📊 Available cards with this number:', cards.filter(c => c.localId === cardNum).map(c => ({ 
+        id: c.id, 
+        set: c.set?.name, 
+        official: c.set?.cardCount?.official,
+        total: c.set?.cardCount?.total 
+      })));
       
       // נחפש קלף שמתאים גם למספר וגם למספר הסט (אם יש)
       let matchingCard = null;
       
       if (setTotal) {
-        // קודם כל נחפש התאמה מדויקת לפי מספר הסט
+        // קודם כל נחפש התאמה מדויקת לפי מספר הסט - בודקים גם official וגם total
         matchingCard = cards.find(c => {
           const numMatch = c.localId === cardNum;
-          const setMatch = c.set?.cardCount?.official === setTotal || c.set?.cardCount?.total === setTotal;
+          const officialCount = c.set?.cardCount?.official;
+          const totalCount = c.set?.cardCount?.total;
+          const setMatch = officialCount === setTotal || totalCount === setTotal;
+          
+          console.log(`  Checking ${c.id}: localId=${c.localId}, official=${officialCount}, total=${totalCount}, numMatch=${numMatch}, setMatch=${setMatch}`);
+          
           if (numMatch && setMatch) {
-            console.log('✅ Found exact match by set total:', c.id, 'set:', c.set.name, 'official:', c.set.cardCount?.official, 'total:', c.set.cardCount?.total);
+            console.log('✅ Found exact match by set total:', c.id, 'set:', c.set.name, 'official:', officialCount, 'total:', totalCount);
             return true;
           }
           return false;

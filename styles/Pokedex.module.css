@@ -27,7 +27,7 @@
 .languageToggle {
   position: fixed;
   top: 20px;
-  right: 20px;
+  left: 20px;
   z-index: 1000;
   display: flex;
   gap: 8px;
@@ -38,32 +38,33 @@
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
 
-.langBtn {
-  padding: 8px 16px;
+.langIconBtn {
+  width: 40px;
+  height: 40px;
   border: none;
-  border-radius: 20px;
+  border-radius: 50%;
   background: transparent;
-  color: white;
-  font-family: 'Heebo', sans-serif;
-  font-weight: 600;
-  font-size: 14px;
+  font-size: 20px;
   cursor: pointer;
   transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.langBtn:hover {
-  background: rgba(255, 255, 255, 0.1);
+.langIconBtn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: scale(1.1);
 }
 
-.langBtn.active {
+.langIconBtn.active {
   background: white;
-  color: var(--pokedex-red);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
 [dir="ltr"] .languageToggle {
-  right: auto;
-  left: 20px;
+  left: auto;
+  right: 20px;
 }
 
 /* Pokido - Authentic Pokedex Design */

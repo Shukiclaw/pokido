@@ -49,16 +49,18 @@ function LanguageToggle() {
   return (
     <div className={styles.languageToggle}>
       <button 
-        className={`${styles.langBtn} ${language === 'he' ? styles.active : ''}`}
+        className={`${styles.langIconBtn} ${language === 'he' ? styles.active : ''}`}
         onClick={() => setLang('he')}
+        title="עברית"
       >
-        {t('hebrew')}
+        🇮🇱
       </button>
       <button 
-        className={`${styles.langBtn} ${language === 'en' ? styles.active : ''}`}
+        className={`${styles.langIconBtn} ${language === 'en' ? styles.active : ''}`}
         onClick={() => setLang('en')}
+        title="English"
       >
-        {t('english')}
+        🇬🇧
       </button>
     </div>
   );
