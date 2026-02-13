@@ -8,7 +8,7 @@ import formidable from 'formidable';
 import fetch from 'node-fetch';
 import fs from 'fs';
 
-const XIMILAR_API = 'https://api.ximilar.com/collectibles/v2/recognize';
+const XIMILAR_API = 'https://api.ximilar.com/collectibles/v2/tcg_id';
 const XIMILAR_TOKEN = process.env.XIMILAR_TOKEN;
 
 export default async function handler(req, res) {
@@ -59,24 +59,20 @@ export default async function handler(req, res) {
     // Handle both single file and array (formidable can return array)
     const actualFile = Array.isArray(file) ? file[0] : file;
     
-    console.log('✅ File received:', actualFile);
-    console.log('File keys:', Object.keys(actualFile));
+    console.log('✅ File received:', actualFile.originalFilename || 'unnamed');
     
-    // Get filepath - formidable uses different property names in different versions
+    // Get filepath
     const filepath = actualFile.filepath || actualFile.path || actualFile.newFilename;
     
     if (!filepath) {
-      console.error('❌ No filepath found. File object:', actualFile);
+      console.error('❌ No filepath found');
       return res.status(500).json({ 
         error: 'File path not found',
-        fileKeys: Object.keys(actualFile),
         usingLocal: true 
       });
     }
-    
-    console.log('File path:', filepath);
 
-    // Read the file
+    // Read the file and convert to base64
     let fileData;
     try {
       fileData = fs.readFileSync(filepath);
@@ -89,15 +85,23 @@ export default async function handler(req, res) {
       });
     }
 
-    // Forward to Ximilar API
-    console.log('Sending to Ximilar API...');
+    // Convert to base64
+    const base64Image = fileData.toString('base64');
+    console.log('✅ Converted to base64, length:', base64Image.length);
+
+    // Forward to Ximilar API with JSON format
+    console.log('Sending to Ximilar API:', XIMILAR_API);
     const response = await fetch(XIMILAR_API, {
       method: 'POST',
       headers: {
         'Authorization': `Token ${XIMILAR_TOKEN}`,
-        'Content-Type': 'application/octet-stream',
+        'Content-Type': 'application/json',
       },
-      body: fileData,
+      body: JSON.stringify({
+        records: [{
+          _base64: base64Image
+        }]
+      }),
     });
     
     console.log('✅ Ximilar response status:', response.status);
@@ -120,7 +124,7 @@ export default async function handler(req, res) {
     }
 
     const data = await response.json();
-    console.log('✅ Success! Pokemon detected:', data);
+    console.log('✅ Success! Response:', JSON.stringify(data).substring(0, 200));
     return res.status(200).json(data);
 
   } catch (error) {
