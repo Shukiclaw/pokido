@@ -21,7 +21,7 @@ async function getPokemonCardTCGdex(pokemonName, cardNumber) {
     console.log('🌐 TCGdex search:', searchUrl);
     
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 5000);
+    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 שניות
     
     const response = await fetch(searchUrl, {
       signal: controller.signal
@@ -229,24 +229,12 @@ export default async function handler(req, res) {
     // Clean up
     try { fs.unlinkSync(filepath); } catch (e) {}
     
-    // אם ה-API נכשל - מחזירים נתוני Gemini בלבד
+    // אם ה-API נכשל - מחזירים שגיאה ברורה
     if (!cardData) {
-      console.log('⚠️ Using Gemini data only (TCGdex failed)');
-      return res.status(200).json({
-        records: [{
-          _identification: {
-            pokemon_name: pokemonName,
-            card_number: cardNumber || 'Unknown',
-            set: geminiResult.setName || 'Unknown',
-            rarity: 'Unknown',
-            description: 'זוהה ע"י Gemini, API לא זמין',
-            image: '',
-            prices: {},
-            geminiDetected: geminiResult,
-            hp: 'Unknown',
-            types: []
-          }
-        }]
+      return res.status(503).json({ 
+        error: 'שירות זיהוי הקלפים לא זמין כרגע. נסה שוב בעוד רגע.',
+        pokemonName: pokemonName,
+        cardNumber: cardNumber
       });
     }
     

@@ -2,122 +2,43 @@ import { useState, useRef, useEffect } from 'react';
 import Head from 'next/head';
 import styles from '../styles/Pokedex.module.css';
 
-const pokemonDB = {
-  pikachu: {
-    name: "פיקאצ'ו",
-    number: '#025',
-    types: ['electric'],
-    typeNames: ['חשמלי'],
-    typeColors: ['#F8D030'],
-    power: 85,
-    hp: 70,
-    rarity: 'נדיר',
-    rarityText: 'הולוגרפי נדיר',
-    stars: '⭐⭐⭐⭐',
-    value: 45,
-    description: 'פוקימון חשמלי שמפיק חשמל מלחי הלחיים',
-    tips: [
-      '💎 קלף נדיר! שמור במכסה מגן',
-      "📈 פיקאצ'ו הוא הפוקימון הכי מפורסם",
-      '✨ גרסה הולוגרפית עם ברק מיוחד'
-    ]
-  },
-  charizard: {
-    name: "צ'אריזארד",
-    number: '#006',
-    types: ['fire', 'flying'],
-    typeNames: ['אש', 'מעופף'],
-    typeColors: ['#F08030', '#A890F0'],
-    power: 120,
-    hp: 150,
-    rarity: 'נדיר ביותר',
-    rarityText: 'אולטרה נדיר',
-    stars: '⭐⭐⭐⭐⭐',
-    value: 3500,
-    description: 'פוקימון אש מיתי שיכול לעוף',
-    tips: [
-      '🏆 קלף מיתי! אחד היקרים בשוק',
-      "🔥 צ'אריזארד הוא האהוב ביותר",
-      '💰 שמור בכספת! ערך עתידי גבוה'
-    ]
-  },
-  mewtwo: {
-    name: 'מיוטו',
-    number: '#150',
-    types: ['psychic'],
-    typeNames: ['פסיכי'],
-    typeColors: ['#F85888'],
-    power: 130,
-    hp: 120,
-    rarity: 'נדיר',
-    rarityText: 'הולוגרפי נדיר',
-    stars: '⭐⭐⭐⭐',
-    value: 180,
-    description: 'פוקימון פסיכי אגדי שנוצר במעבדה',
-    tips: [
-      '🧠 פוקימון אגדי מהדור הראשון',
-      '⚡ אחד החזקים ביותר',
-      '📊 ביקוש גבוה בקרב אספנים'
-    ]
-  },
-  mew: {
-    name: 'מיו',
-    number: '#151',
-    types: ['psychic'],
-    typeNames: ['פסיכי'],
-    typeColors: ['#FF69B4'],
-    power: 100,
-    hp: 180,
-    rarity: 'נדיר ביותר',
-    rarityText: 'V הולוגרפי נדיר',
-    stars: '⭐⭐⭐⭐⭐',
-    value: 450,
-    description: 'האב הקדמון של כל הפוקימונים!',
-    tips: [
-      '🧬 האב הקדמון של כל הפוקימונים!',
-      '💎 קלף V הולוגרפי - ערך גבוה',
-      '🏆 נדיר מסדרת Fusion Strike',
-      '✨ שמור במכסה מגן!'
-    ]
-  },
-  blastoise: {
-    name: 'בלסטוייז',
-    number: '#009',
-    types: ['water'],
-    typeNames: ['מים'],
-    typeColors: ['#6890F0'],
-    power: 105,
-    hp: 140,
-    rarity: 'נדיר',
-    rarityText: 'הולוגרפי נדיר',
-    stars: '⭐⭐⭐⭐',
-    value: 85,
-    description: 'פוקימון מים עם תותחי מים בגבו',
-    tips: [
-      '💧 אחד משלושת הסטרטרים המקוריים',
-      '🛡️ הגנה חזקה מאוד',
-      '🌊 פופולרי בקרב אספנים'
-    ]
-  },
-  venusaur: {
-    name: 'ונוסאור',
-    number: '#003',
-    types: ['grass', 'poison'],
-    typeNames: ['עשב', 'רעל'],
-    typeColors: ['#78C850', '#A040A0'],
-    power: 100,
-    hp: 160,
-    rarity: 'נדיר',
-    rarityText: 'הולוגרפי נדיר',
-    stars: '⭐⭐⭐',
-    value: 65,
-    description: 'פוקימון עשבי עם פרח גדול על הגב',
-    tips: [
-      '🌿 פוקימון עשבי חזק',
-      '📈 ערך הולך ועולה',
-      '💚 סטרטר קלאסי'
-    ]
-  }
+// מיפוי סוגים לעברית וצבעים
+const typeMapping = {
+  water: { name: 'מים', color: '#6890F0' },
+  fire: { name: 'אש', color: '#F08030' },
+  grass: { name: 'עשב', color: '#78C850' },
+  electric: { name: 'חשמלי', color: '#F8D030' },
+  psychic: { name: 'פסיכי', color: '#F85888' },
+  fighting: { name: 'לחימה', color: '#C03028' },
+  darkness: { name: 'אופל', color: '#705848' },
+  metal: { name: 'מתכת', color: '#B8B8D0' },
+  fairy: { name: 'פיה', color: '#EE99AC' },
+  dragon: { name: 'דרקון', color: '#7038F8' },
+  colorless: { name: 'נטול צבע', color: '#A8A878' },
+  flying: { name: 'מעופף', color: '#A890F0' },
+  poison: { name: 'רעל', color: '#A040A0' },
+  ice: { name: 'קרח', color: '#98D8D8' },
+  ground: { name: 'קרקע', color: '#E0C068' },
+  rock: { name: 'סלע', color: '#B8A038' },
+  bug: { name: 'חרק', color: '#A8B820' },
+  ghost: { name: 'רוח', color: '#705898' },
+  steel: { name: 'פלדה', color: '#B8B8D0' },
+  dark: { name: 'אופל', color: '#705848' },
+};
+
+// תרגום נדירות
+const rarityMapping = {
+  'Common': 'נפוץ',
+  'Uncommon': 'לא נפוץ',
+  'Rare': 'נדיר',
+  'Rare Holo': 'הולוגרפי נדיר',
+  'Rare Ultra': 'אולטרה נדיר',
+  'Ultra Rare': 'אולטרה נדיר',
+  'Secret Rare': 'סודי נדיר',
+  'Promo': 'פרומו',
+  'Amazing Rare': 'מדהים נדיר',
+  'Shiny Rare': 'מבריק נדיר',
+  'Radiant Rare': 'זוהר נדיר',
 };
 
 export default function Pokedex() {
@@ -156,7 +77,7 @@ export default function Pokedex() {
   const analyzeCard = async () => {
     setView('loading');
     setIsScanning(true);
-    setStatus('מתחבר ל-Ximilar API...');
+    setStatus('מנתח את הקלף...');
     setError('');
 
     try {
@@ -182,14 +103,14 @@ export default function Pokedex() {
         throw new Error('תשובה לא תקינה מהשרת');
       }
 
-      // Check if API returned error with fallback flag
-      if (!response.ok || data.usingLocal) {
+      // Check if API returned error
+      if (!response.ok) {
         console.error('API Error:', data);
-        throw new Error(data.error || data.message || `שגיאת API: ${response.status}`);
+        throw new Error(data.error || `שגיאת API: ${response.status}`);
       }
 
-      console.log('✅ Ximilar Response:', data);
-      const cardData = parseXimilarResponse(data);
+      console.log('✅ API Response:', data);
+      const cardData = parseAPIResponse(data);
       
       if (!cardData) {
         throw new Error('לא ניתן לזהות את הקלף');
@@ -202,71 +123,94 @@ export default function Pokedex() {
     } catch (err) {
       console.error('❌ Error:', err);
       setError(err.message);
-      
-      // Check if it's a configuration error
-      if (err.message.includes('not configured') || err.message.includes('XIMILAR_TOKEN')) {
-        setStatus('⚠️ API לא מוגדר');
-        setTimeout(() => {
-          setView('upload');
-          alert('⚠️ חסר API Token!\n\nנא להוסיף XIMILAR_TOKEN ב-Vercel dashboard:\nSettings → Environment Variables');
-        }, 1000);
-        return;
-      }
-      
-      setStatus('משתמש בזיהוי מקומי...');
+      setStatus('הסריקה נכשלה');
       
       setTimeout(() => {
-        const detected = analyzeImageLocally();
-        setResult(detected);
         setIsScanning(false);
-        setView('result');
-      }, 1500);
+        setView('upload');
+        alert('❌ ' + err.message + '\n\nנסה שוב או צלם קלף אחר.');
+      }, 1000);
     }
   };
 
-  const analyzeImageLocally = () => {
-    const pokemons = Object.keys(pokemonDB);
-    const random = pokemons[Math.floor(Math.random() * pokemons.length)];
-    return pokemonDB[random];
-  };
-
-  const parseXimilarResponse = (apiData) => {
-    console.log('Parsing:', apiData);
+  // פונקציה לניתוח תשובת API אמיתית
+  const parseAPIResponse = (apiData) => {
+    console.log('Parsing API data:', apiData);
     
-    try {
-      if (apiData.error) {
-        console.error('API returned error:', apiData.error);
-        return analyzeImageLocally();
-      }
-
-      const records = apiData.records || apiData;
-      if (!records || !records.length) {
-        console.log('No records found');
-        return analyzeImageLocally();
-      }
-
-      const record = records[0];
-      const bestMatch = record._best_match || record.best_match || record;
-      const id = bestMatch.identification || bestMatch;
-      
-      const name = (id.pokemon_name || id.name || id.pokemon || '').toLowerCase();
-      console.log('Detected name:', name);
-
-      for (const [key, value] of Object.entries(pokemonDB)) {
-        if (name.includes(key) || value.name.toLowerCase().includes(name)) {
-          console.log('Found match:', key);
-          return value;
-        }
-      }
-
-      if (name.includes('mew')) return pokemonDB.mew;
-      
-      return analyzeImageLocally();
-
-    } catch (e) {
-      console.error('Parse error:', e);
-      return analyzeImageLocally();
+    if (apiData.error) {
+      throw new Error(apiData.error);
     }
+
+    const records = apiData.records;
+    if (!records || !records.length) {
+      throw new Error('לא נמצאו קלפים');
+    }
+
+    const id = records[0]._identification;
+    console.log('Card data:', id);
+    
+    // המרת סוגים לעברית
+    const typeNames = [];
+    const typeColors = [];
+    if (id.types) {
+      id.types.forEach(type => {
+        const mapped = typeMapping[type.toLowerCase()];
+        if (mapped) {
+          typeNames.push(mapped.name);
+          typeColors.push(mapped.color);
+        }
+      });
+    }
+    
+    // חישוב ערך משוער
+    let value = 0;
+    if (id.prices) {
+      if (id.prices.cardmarket?.trend) {
+        value = Math.round(id.prices.cardmarket.trend * 4); // המרה מיורו לש"ח
+      } else if (id.prices.tcgplayer?.marketPrice) {
+        value = Math.round(id.prices.tcgplayer.marketPrice * 3.5); // המרה מדולר לש"ח
+      }
+    }
+    
+    // יצירת טיפים
+    const tips = [];
+    if (id.rarity?.toLowerCase().includes('ultra') || id.rarity?.toLowerCase().includes('secret')) {
+      tips.push('💎 קלף נדיר מאוד! שמור במכסה מגן');
+      tips.push('📈 ערך עתידי גבוה');
+    } else if (id.rarity?.toLowerCase().includes('holo') || id.rarity?.toLowerCase().includes('rare')) {
+      tips.push('✨ קלף הולוגרפי - שמור בטוב');
+      tips.push('💎 ערך אספני');
+    }
+    if (value > 50) {
+      tips.push('💰 קלף יקר! שמור במקום בטוח');
+    }
+    if (id.hp && parseInt(id.hp) > 200) {
+      tips.push('⚡ HP גבוה - קלף חזק במשחק!');
+    }
+    if (tips.length === 0) {
+      tips.push('📚 קלף נחמד לאוסף');
+      tips.push('✨ שמור בתנאים טובים');
+    }
+
+    return {
+      name: id.pokemon_name || id.name,
+      number: `#${id.card_number || id.number || '???'}`,
+      types: id.types || [],
+      typeNames: typeNames,
+      typeColors: typeColors,
+      hp: id.hp || '?',
+      rarity: rarityMapping[id.rarity] || id.rarity || 'נפוץ',
+      rarityText: id.rarity || 'Common',
+      stars: id.rarity?.toLowerCase().includes('ultra') ? '⭐⭐⭐⭐⭐' : 
+             id.rarity?.toLowerCase().includes('rare') ? '⭐⭐⭐⭐' : '⭐⭐',
+      value: value || 10,
+      description: id.description || `${id.pokemon_name || id.name} - קלף פוקימון`,
+      tips: tips,
+      image: id.image,
+      set: id.set,
+      prices: id.prices,
+      geminiDetected: id.geminiDetected
+    };
   };
 
   const reset = () => {
@@ -506,7 +450,7 @@ export default function Pokedex() {
       {/* Footer */}
       <footer className={styles.footer}>
         <p>Pokido © 2026 - עידו וחברים 🎴</p>
-        <p>Powered by Ximilar AI</p>
+        <p>Powered by Gemini AI + TCGdex</p>
       </footer>
     </div>
   );
