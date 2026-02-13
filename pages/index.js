@@ -49,6 +49,7 @@ export default function Pokedex() {
   const [status, setStatus] = useState('');
   const [error, setError] = useState('');
   const [isScanning, setIsScanning] = useState(false);
+  const [showCardModal, setShowCardModal] = useState(false);
   const fileInputRef = useRef(null);
 
   useEffect(() => {
@@ -351,22 +352,27 @@ export default function Pokedex() {
               {view === 'result' && result && (
                 <div className={styles.resultScreen}>
                   <div className={styles.resultCard}>
-                    {/* Pokemon Image */}
-                    <div className={styles.pokemonImageSection}>
+                    {/* Pokemon Image - Full Screen clickable */}
+                    <div 
+                      className={styles.pokemonImageSection}
+                      onClick={() => setShowCardModal(true)}
+                    >
                       {result.image ? (
                         <img 
                           src={result.image} 
                           alt={result.name} 
-                          className={styles.pokemonImage}
+                          className={styles.pokemonImageFull}
                           onError={(e) => {
                             console.log('API image failed, falling back to uploaded image');
                             e.target.src = image;
                           }}
                         />
                       ) : (
-                        <img src={image} alt={result.name} className={styles.pokemonImage} />
+                        <img src={image} alt={result.name} className={styles.pokemonImageFull} />
                       )}
-                      <div className={styles.imageOverlay}></div>
+                      <div className={styles.imageOverlay}>
+                        <span className={styles.zoomIcon}>🔍</span>
+                      </div>
                     </div>
 
                     {/* Info Section */}
@@ -494,6 +500,32 @@ export default function Pokedex() {
                       </div>
                     )}
                   </div>
+                  
+                  {/* Card Modal - Full Screen */}
+                  {showCardModal && (
+                    <div 
+                      className={styles.cardModal}
+                      onClick={() => setShowCardModal(false)}
+                    >
+                      <div className={styles.cardModalContent} onClick={e => e.stopPropagation()}>
+                        <button 
+                          className={styles.closeModalBtn}
+                          onClick={() => setShowCardModal(false)}
+                        >
+                          ✕
+                        </button>
+                        <img 
+                          src={result.image || image} 
+                          alt={result.name}
+                          className={styles.cardModalImage}
+                        />
+                        <div className={styles.cardModalInfo}>
+                          <h3>{result.name} {result.number}</h3>
+                          <p>{result.set} | {result.rarity}</p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
             </div>

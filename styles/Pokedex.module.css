@@ -726,6 +726,124 @@ html, body {
   margin: 3px 0;
 }
 
+/* Card Modal - Full Screen Overlay */
+.cardModal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.3s ease;
+  padding: 20px;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.cardModalContent {
+  position: relative;
+  max-width: 90vw;
+  max-height: 90vh;
+  animation: zoomIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes zoomIn {
+  from { 
+    transform: scale(0.5);
+    opacity: 0;
+  }
+  to { 
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.cardModalImage {
+  max-width: 100%;
+  max-height: 80vh;
+  border-radius: 15px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  border: 4px solid #FFD700;
+}
+
+.closeModalBtn {
+  position: absolute;
+  top: -40px;
+  right: 0;
+  background: #DC0A2D;
+  color: white;
+  border: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  font-size: 1.2rem;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  transition: transform 0.2s, background 0.2s;
+}
+
+.closeModalBtn:hover {
+  transform: scale(1.1);
+  background: #ff1a3c;
+}
+
+.cardModalInfo {
+  text-align: center;
+  color: white;
+  margin-top: 15px;
+}
+
+.cardModalInfo h3 {
+  margin: 0 0 5px 0;
+  font-size: 1.3rem;
+}
+
+.cardModalInfo p {
+  margin: 0;
+  opacity: 0.8;
+  font-size: 0.9rem;
+}
+
+/* Full Screen Pokemon Image in Result */
+.pokemonImageFull {
+  width: 100%;
+  max-width: 280px;
+  height: auto;
+  border-radius: 12px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+  transition: transform 0.2s, box-shadow 0.2s;
+  cursor: pointer;
+}
+
+.pokemonImageFull:hover {
+  transform: scale(1.05);
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.4);
+}
+
+.zoomIcon {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  background: rgba(0, 0, 0, 0.6);
+  color: white;
+  padding: 8px;
+  border-radius: 50%;
+  font-size: 1.2rem;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.pokemonImageSection:hover .zoomIcon {
+  opacity: 1;
+}
+
 /* Details Section */
 .detailsSection {
   background: rgba(0, 0, 0, 0.15);
