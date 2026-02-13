@@ -83,45 +83,48 @@ async function getPokemonCardTCGdex(pokemonName, cardNumber, isJapanese = false)
       const setTotal = cardNumMatch ? parseInt(cardNumMatch[2]) : null;
       
       console.log('🔍 Looking for card:', cardNum, 'in set with', setTotal, 'cards');
-      console.log('📊 Available cards with this number:', cards.filter(c => c.localId === cardNum).map(c => ({ 
-        id: c.id, 
-        set: c.set?.name, 
-        official: c.set?.cardCount?.official,
-        total: c.set?.cardCount?.total 
-      })));
       
-      // נחפש קלף שמתאים גם למספר וגם למספר הסט (אם יש)
-      let matchingCard = null;
+      // מציאת כל הקלפים עם המספר המתאים
+      const matchingCards = cards.filter(c => c.localId === cardNum);
+      console.log('📊 Found', matchingCards.length, 'cards with localId', cardNum);
       
-      if (setTotal) {
-        // קודם כל נחפש התאמה מדויקת לפי מספר הסט - בודקים גם official וגם total
-        matchingCard = cards.find(c => {
-          const numMatch = c.localId === cardNum;
-          const officialCount = c.set?.cardCount?.official;
-          const totalCount = c.set?.cardCount?.total;
-          const setMatch = officialCount === setTotal || totalCount === setTotal;
-          
-          console.log(`  Checking ${c.id}: localId=${c.localId}, official=${officialCount}, total=${totalCount}, numMatch=${numMatch}, setMatch=${setMatch}`);
-          
-          if (numMatch && setMatch) {
-            console.log('✅ Found exact match by set total:', c.id, 'set:', c.set.name, 'official:', officialCount, 'total:', totalCount);
-            return true;
+      if (setTotal && matchingCards.length > 1) {
+        // יש לנו כמה קלפים עם אותו מספר - צריך לבדוק את הסט לכל אחד
+        console.log('🔍 Multiple cards found, fetching set details to match set size...');
+        
+        // שליפת פרטים מלאים לכל קלף כדי לבדוק את גודל הסט
+        for (const card of matchingCards) {
+          try {
+            const detailUrl = `${apiBase}/cards/${card.id}`;
+            console.log('  Fetching details for:', card.id);
+            
+            const detailResponse = await fetch(detailUrl, { signal: controller.signal });
+            if (detailResponse.ok) {
+              const fullCard = await detailResponse.json();
+              const officialCount = fullCard.set?.cardCount?.official;
+              const totalCount = fullCard.set?.cardCount?.total;
+              
+              console.log(`    ${card.id}: set=${fullCard.set?.name}, official=${officialCount}, total=${totalCount}`);
+              
+              // בדיקה אם זה הסט הנכון
+              if (officialCount === setTotal || totalCount === setTotal) {
+                console.log('✅ Found exact match:', card.id, 'set:', fullCard.set?.name);
+                selectedCard = fullCard; // שמירת כל הפרטים המלאים
+                return await formatCardData(selectedCard, isJapanese);
+              }
+            }
+          } catch (e) {
+            console.log('  Error fetching details for', card.id, ':', e.message);
           }
-          return false;
-        });
-      }
-      
-      // אם לא מצאנו התאמה מדויקת עם מספר הסט, ניקח את התאמה רק לפי מספר הקלף
-      if (!matchingCard) {
-        matchingCard = cards.find(c => c.localId === cardNum);
-        if (matchingCard) {
-          console.log('⚠️ Found match by card number only:', matchingCard.id, 'set:', matchingCard.set?.name);
         }
-      }
-      
-      if (matchingCard) {
-        selectedCard = matchingCard;
-        console.log('✅ Selected card:', selectedCard.id, 'from set:', selectedCard.set?.name);
+        
+        // אם הגענו לכאן, לא מצאנו התאמה לפי גודל הסט - ניקח את הראשון
+        console.log('⚠️ No set size match found, using first card with number', cardNum);
+        selectedCard = matchingCards[0];
+      } else if (matchingCards.length > 0) {
+        // יש התאמה אחת או יותר - ניקח את הראשונה
+        selectedCard = matchingCards[0];
+        console.log('✅ Found single match:', selectedCard.id);
       } else {
         console.log('⚠️ No match found for card number:', cardNumber, 'using first result');
       }
