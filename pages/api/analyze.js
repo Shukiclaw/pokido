@@ -14,6 +14,36 @@ const POKEMON_TCG_API = 'https://api.pokemontcg.io/v2/cards';
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 const POKEMON_TCG_API_KEY = process.env.POKEMON_TCG_API_KEY;
 
+// קריאה ל-Pokemon TCG API - מנסה כמה שיטות
+async function getPokemonCard(pokemonName, cardNumber) {
+  // שיטה 1: חיפוש פשוט לפי שם בלבד
+  const simpleQuery = `${POKEMON_TCG_API}?q=name:${encodeURIComponent(pokemonName)}&pageSize=5`;
+  console.log('🌐 Trying simple query:', simpleQuery);
+  
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 6000);
+    
+    const response = await fetch(simpleQuery, {
+      headers: POKEMON_TCG_API_KEY ? { 'X-Api-Key': POKEMON_TCG_API_KEY } : {},
+      signal: controller.signal
+    });
+    
+    clearTimeout(timeoutId);
+    
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+    
+    const data = await response.json();
+    return data;
+    
+  } catch (err) {
+    console.error('⚠️ Simple query failed:', err.message);
+    return null;
+  }
+}
+
 async function analyzeImageWithGemini(imagePath) {
   if (!GEMINI_API_KEY) {
     throw new Error('GEMINI_API_KEY not configured');
@@ -141,43 +171,15 @@ export default async function handler(req, res) {
 
     console.log(`🎯 Found: ${pokemonName}, Card #${cardNumber || 'unknown'}`);
 
-    // קריאה ל-Pokemon TCG API - פשוט יותר ללא מרכאות
-    const searchQuery = `name:${pokemonName.toLowerCase()}`;
-    const apiUrl = `${POKEMON_TCG_API}?q=${encodeURIComponent(searchQuery)}&pageSize=5&orderBy=-set.releaseDate`;
-    console.log('🌐 Pokemon API:', apiUrl);
+    // קריאה ל-Pokemon TCG API
+    const cardData = await getPokemonCard(pokemonName, cardNumber);
     
-    const headers = {
-      'Accept': 'application/json'
-    };
-    if (POKEMON_TCG_API_KEY) {
-      headers['X-Api-Key'] = POKEMON_TCG_API_KEY;
-    }
+    // Clean up
+    try { fs.unlinkSync(filepath); } catch (e) {}
     
-    // timeout של 8 שניות
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 8000);
-    
-    let cardData;
-    let apiError = null;
-    
-    try {
-      const response = await fetch(apiUrl, { 
-        headers,
-        signal: controller.signal
-      });
-      
-      clearTimeout(timeoutId);
-
-      if (!response.ok) {
-        throw new Error(`Pokemon TCG API error: ${response.status}`);
-      }
-
-      cardData = await response.json();
-      
-    } catch (apiErr) {
-      console.error('⚠️ Pokemon API failed:', apiErr.message);
-      apiError = apiErr.message;
-      // נחזיר תוצאה מה-Gemini בלבד
+    // אם ה-API נכשל - מחזירים נתוני Gemini בלבד
+    if (!cardData) {
+      console.log('⚠️ Using Gemini data only (API failed)');
       return res.status(200).json({
         records: [{
           _identification: {
@@ -185,18 +187,16 @@ export default async function handler(req, res) {
             card_number: cardNumber || 'Unknown',
             set: geminiResult.setName || 'Unknown',
             rarity: 'Unknown',
-            description: 'זוהה ע"י Gemini, API לא זמין',
+            description: 'זוהה ע"י Gemini, Pokemon API לא זמין',
             image: '',
             prices: {},
             geminiDetected: geminiResult,
-            apiError: apiError
+            hp: 'Unknown',
+            types: []
           }
         }]
       });
     }
-    
-    // Clean up
-    try { fs.unlinkSync(filepath); } catch (e) {}
 
     if (!cardData.data || cardData.data.length === 0) {
       return res.status(404).json({ 
