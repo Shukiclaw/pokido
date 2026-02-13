@@ -52,15 +52,42 @@ export default async function handler(req, res) {
 
     const file = files.file;
     if (!file) {
-      console.error('❌ No file in request');
+      console.error('❌ No file in request. Files:', files);
       return res.status(400).json({ error: 'No file uploaded' });
     }
     
-    console.log('✅ File received:', file.originalFilename, file.mimetype);
+    // Handle both single file and array (formidable can return array)
+    const actualFile = Array.isArray(file) ? file[0] : file;
+    
+    console.log('✅ File received:', actualFile);
+    console.log('File keys:', Object.keys(actualFile));
+    
+    // Get filepath - formidable uses different property names in different versions
+    const filepath = actualFile.filepath || actualFile.path || actualFile.newFilename;
+    
+    if (!filepath) {
+      console.error('❌ No filepath found. File object:', actualFile);
+      return res.status(500).json({ 
+        error: 'File path not found',
+        fileKeys: Object.keys(actualFile),
+        usingLocal: true 
+      });
+    }
+    
+    console.log('File path:', filepath);
 
     // Read the file
-    const fileData = fs.readFileSync(file.filepath);
-    console.log('✅ File read, size:', fileData.length, 'bytes');
+    let fileData;
+    try {
+      fileData = fs.readFileSync(filepath);
+      console.log('✅ File read, size:', fileData.length, 'bytes');
+    } catch (readError) {
+      console.error('❌ Error reading file:', readError);
+      return res.status(500).json({ 
+        error: 'Failed to read file: ' + readError.message,
+        usingLocal: true 
+      });
+    }
 
     // Forward to Ximilar API
     console.log('Sending to Ximilar API...');
@@ -76,7 +103,11 @@ export default async function handler(req, res) {
     console.log('✅ Ximilar response status:', response.status);
 
     // Clean up temp file
-    fs.unlinkSync(file.filepath);
+    try {
+      fs.unlinkSync(filepath);
+    } catch (e) {
+      console.log('Could not delete temp file:', e.message);
+    }
 
     if (!response.ok) {
       const errorText = await response.text();
