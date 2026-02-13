@@ -70,20 +70,43 @@ async function getPokemonCardTCGdex(pokemonName, cardNumber) {
       return null;
     }
     
-    // אם יש מספר קלף, נחפש התאמה
+    // אם יש מספר קלף, נחפש התאמה - כולל התאמה לפי מספר הסט (למשל 132/214)
     let selectedCard = cards[0];
     
     if (cardNumber) {
-      const numOnly = cardNumber.split('/')[0]?.trim();
-      const matchingCard = cards.find(c => 
-        c.localId === numOnly || 
-        c.localId === cardNumber ||
-        c.id?.includes(numOnly)
-      );
+      // חילוץ מספר הקלף ומספר הסט (למשל "132/214" → cardNum=132, setTotal=214)
+      const cardNumMatch = cardNumber.match(/(\d+)\s*\/\s*(\d+)/);
+      const cardNum = cardNumMatch ? cardNumMatch[1] : cardNumber;
+      const setTotal = cardNumMatch ? parseInt(cardNumMatch[2]) : null;
+      
+      console.log('🔍 Looking for card:', cardNum, 'in set with', setTotal, 'cards');
+      
+      // נחפש קלף שמתאים גם למספר וגם למספר הסט (אם יש)
+      let matchingCard = cards.find(c => {
+        const numMatch = c.localId === cardNum || c.localId === cardNumber;
+        
+        // אם יש מספר סט, נבדוק גם אותו
+        if (numMatch && setTotal && c.set?.cardCount?.official) {
+          const setMatch = c.set.cardCount.official === setTotal;
+          if (setMatch) {
+            console.log('✅ Found exact match:', c.id, 'set:', c.set.name, 'total:', c.set.cardCount.official);
+            return true;
+          }
+        }
+        
+        return numMatch;
+      });
+      
+      // אם לא מצאנו התאמה מדויקת עם מספר הסט, ניקח את התאמה רק לפי מספר הקלף
+      if (!matchingCard) {
+        matchingCard = cards.find(c => c.localId === cardNum || c.localId === cardNumber);
+      }
       
       if (matchingCard) {
         selectedCard = matchingCard;
-        console.log('✅ Matched card number:', selectedCard.localId);
+        console.log('✅ Matched card:', selectedCard.id, 'from set:', selectedCard.set?.name);
+      } else {
+        console.log('⚠️ No match found for card number:', cardNumber, 'using first result');
       }
     }
     
