@@ -126,6 +126,7 @@ export default async function handler(req, res) {
     // Gemini OCR
     const geminiResult = await analyzeImageWithGemini(filepath);
     console.log('✅ Gemini result:', geminiResult);
+    console.log('📝 Raw Gemini text:', JSON.stringify(geminiResult));
 
     const pokemonName = geminiResult.pokemonName;
     const cardNumber = geminiResult.cardNumber;
@@ -140,17 +141,11 @@ export default async function handler(req, res) {
 
     console.log(`🎯 Found: ${pokemonName}, Card #${cardNumber || 'unknown'}`);
 
-    // קריאה ל-Pokemon TCG API
-    let searchQuery = `name:${pokemonName}`;
-    if (cardNumber) {
-      const numOnly = cardNumber.split('/')[0];
-      if (numOnly) {
-        searchQuery += ` number:${numOnly}`;
-      }
-    }
-
-    const apiUrl = `${POKEMON_TCG_API}?q=${encodeURIComponent(searchQuery)}&pageSize=10`;
+    // קריאה ל-Pokemon TCG API - קודם רק לפי שם
+    const searchQuery = `name:"${pokemonName}"`;
+    const apiUrl = `${POKEMON_TCG_API}?q=${encodeURIComponent(searchQuery)}&pageSize=20`;
     console.log('🌐 Pokemon API:', apiUrl);
+    console.log('🔍 Searching for:', pokemonName, 'Card#:', cardNumber);
     
     const headers = {};
     if (POKEMON_TCG_API_KEY) {
@@ -173,11 +168,21 @@ export default async function handler(req, res) {
         error: `לא נמצאו קלפים ל-${pokemonName}`,
         pokemonName: pokemonName,
         cardNumber: cardNumber,
-        geminiResult: geminiResult
+        geminiResult: geminiResult,
+        apiQuery: searchQuery
       });
     }
 
-    const card = data.data[0];
+    // אם יש מספר קלף, נחפש התאמה
+    let card = data.data[0];
+    if (cardNumber) {
+      const numOnly = cardNumber.split('/')[0]?.trim();
+      const matchingCard = data.data.find(c => c.number === numOnly || c.number === cardNumber);
+      if (matchingCard) {
+        card = matchingCard;
+        console.log('✅ Found exact match:', card.name, '#', card.number);
+      }
+    }
     
     return res.status(200).json({
       records: [{
