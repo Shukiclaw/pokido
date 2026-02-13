@@ -1,47 +1,71 @@
 import { useState, useRef, useEffect } from 'react';
 import Head from 'next/head';
 import styles from '../styles/Pokedex.module.css';
+import { useLanguage } from '../contexts/LanguageContext';
 
-// מיפוי סוגים לעברית וצבעים
+// Type mapping with both languages
 const typeMapping = {
-  water: { name: 'מים', color: '#6890F0' },
-  fire: { name: 'אש', color: '#F08030' },
-  grass: { name: 'עשב', color: '#78C850' },
-  electric: { name: 'חשמלי', color: '#F8D030' },
-  psychic: { name: 'פסיכי', color: '#F85888' },
-  fighting: { name: 'לחימה', color: '#C03028' },
-  darkness: { name: 'אופל', color: '#705848' },
-  metal: { name: 'מתכת', color: '#B8B8D0' },
-  fairy: { name: 'פיה', color: '#EE99AC' },
-  dragon: { name: 'דרקון', color: '#7038F8' },
-  colorless: { name: 'נטול צבע', color: '#A8A878' },
-  flying: { name: 'מעופף', color: '#A890F0' },
-  poison: { name: 'רעל', color: '#A040A0' },
-  ice: { name: 'קרח', color: '#98D8D8' },
-  ground: { name: 'קרקע', color: '#E0C068' },
-  rock: { name: 'סלע', color: '#B8A038' },
-  bug: { name: 'חרק', color: '#A8B820' },
-  ghost: { name: 'רוח', color: '#705898' },
-  steel: { name: 'פלדה', color: '#B8B8D0' },
-  dark: { name: 'אופל', color: '#705848' },
+  water: { nameHe: 'מים', nameEn: 'Water', color: '#6890F0' },
+  fire: { nameHe: 'אש', nameEn: 'Fire', color: '#F08030' },
+  grass: { nameHe: 'עשב', nameEn: 'Grass', color: '#78C850' },
+  electric: { nameHe: 'חשמלי', nameEn: 'Electric', color: '#F8D030' },
+  psychic: { nameHe: 'פסיכי', nameEn: 'Psychic', color: '#F85888' },
+  fighting: { nameHe: 'לחימה', nameEn: 'Fighting', color: '#C03028' },
+  darkness: { nameHe: 'אופל', nameEn: 'Darkness', color: '#705848' },
+  metal: { nameHe: 'מתכת', nameEn: 'Metal', color: '#B8B8D0' },
+  fairy: { nameHe: 'פיה', nameEn: 'Fairy', color: '#EE99AC' },
+  dragon: { nameHe: 'דרקון', nameEn: 'Dragon', color: '#7038F8' },
+  colorless: { nameHe: 'נטול צבע', nameEn: 'Colorless', color: '#A8A878' },
+  flying: { nameHe: 'מעופף', nameEn: 'Flying', color: '#A890F0' },
+  poison: { nameHe: 'רעל', nameEn: 'Poison', color: '#A040A0' },
+  ice: { nameHe: 'קרח', nameEn: 'Ice', color: '#98D8D8' },
+  ground: { nameHe: 'קרקע', nameEn: 'Ground', color: '#E0C068' },
+  rock: { nameHe: 'סלע', nameEn: 'Rock', color: '#B8A038' },
+  bug: { nameHe: 'חרק', nameEn: 'Bug', color: '#A8B820' },
+  ghost: { nameHe: 'רוח', nameEn: 'Ghost', color: '#705898' },
+  steel: { nameHe: 'פלדה', nameEn: 'Steel', color: '#B8B8D0' },
+  dark: { nameHe: 'אופל', nameEn: 'Dark', color: '#705848' },
 };
 
-// תרגום נדירות
+// Rarity mapping with both languages
 const rarityMapping = {
-  'Common': 'נפוץ',
-  'Uncommon': 'לא נפוץ',
-  'Rare': 'נדיר',
-  'Rare Holo': 'הולוגרפי נדיר',
-  'Rare Ultra': 'אולטרה נדיר',
-  'Ultra Rare': 'אולטרה נדיר',
-  'Secret Rare': 'סודי נדיר',
-  'Promo': 'פרומו',
-  'Amazing Rare': 'מדהים נדיר',
-  'Shiny Rare': 'מבריק נדיר',
-  'Radiant Rare': 'זוהר נדיר',
+  'Common': { he: 'נפוץ', en: 'Common' },
+  'Uncommon': { he: 'לא נפוץ', en: 'Uncommon' },
+  'Rare': { he: 'נדיר', en: 'Rare' },
+  'Rare Holo': { he: 'הולוגרפי נדיר', en: 'Rare Holo' },
+  'Rare Ultra': { he: 'אולטרה נדיר', en: 'Rare Ultra' },
+  'Ultra Rare': { he: 'אולטרה נדיר', en: 'Ultra Rare' },
+  'Secret Rare': { he: 'סודי נדיר', en: 'Secret Rare' },
+  'Promo': { he: 'פרומו', en: 'Promo' },
+  'Amazing Rare': { he: 'מדהים נדיר', en: 'Amazing Rare' },
+  'Shiny Rare': { he: 'מבריק נדיר', en: 'Shiny Rare' },
+  'Radiant Rare': { he: 'זוהר נדיר', en: 'Radiant Rare' },
 };
+
+// Language Toggle Component
+function LanguageToggle() {
+  const { language, setLang, t } = useLanguage();
+  
+  return (
+    <div className={styles.languageToggle}>
+      <button 
+        className={`${styles.langBtn} ${language === 'he' ? styles.active : ''}`}
+        onClick={() => setLang('he')}
+      >
+        {t('hebrew')}
+      </button>
+      <button 
+        className={`${styles.langBtn} ${language === 'en' ? styles.active : ''}`}
+        onClick={() => setLang('en')}
+      >
+        {t('english')}
+      </button>
+    </div>
+  );
+}
 
 export default function Pokedex() {
+  const { t, language } = useLanguage();
   const [view, setView] = useState('closed');
   const [image, setImage] = useState(null);
   const [selectedFile, setSelectedFile] = useState(null);
@@ -78,19 +102,19 @@ export default function Pokedex() {
   const analyzeCard = async () => {
     setView('loading');
     setIsScanning(true);
-    setStatus('מנתח את הקלף...');
+    setStatus(t('analyzing'));
     setError('');
 
     try {
-      if (!selectedFile) throw new Error('לא נבחר קובץ');
+      if (!selectedFile) throw new Error(language === 'he' ? 'לא נבחר קובץ' : 'No file selected');
 
       const formData = new FormData();
       formData.append('file', selectedFile);
 
-      setStatus('מעבד תמונה...');
+      setStatus(t('processing'));
       await new Promise(r => setTimeout(r, 800));
 
-      setStatus('מזהה פוקימון...');
+      setStatus(t('identifying'));
       
       const response = await fetch('/api/analyze', {
         method: 'POST',
@@ -101,20 +125,20 @@ export default function Pokedex() {
       try {
         data = await response.json();
       } catch (e) {
-        throw new Error('תשובה לא תקינה מהשרת');
+        throw new Error(language === 'he' ? 'תשובה לא תקינה מהשרת' : 'Invalid server response');
       }
 
       // Check if API returned error
       if (!response.ok) {
         console.error('API Error:', data);
-        throw new Error(data.error || `שגיאת API: ${response.status}`);
+        throw new Error(data.error || `API Error: ${response.status}`);
       }
 
       console.log('✅ API Response:', data);
       const cardData = parseAPIResponse(data);
       
       if (!cardData) {
-        throw new Error('לא ניתן לזהות את הקלף');
+        throw new Error(language === 'he' ? 'לא ניתן לזהות את הקלף' : 'Could not identify card');
       }
       
       setResult(cardData);
@@ -124,12 +148,12 @@ export default function Pokedex() {
     } catch (err) {
       console.error('❌ Error:', err);
       setError(err.message);
-      setStatus('הסריקה נכשלה');
+      setStatus(t('scanFailed'));
       
       setTimeout(() => {
         setIsScanning(false);
         setView('upload');
-        alert('❌ ' + err.message + '\n\nנסה שוב או צלם קלף אחר.');
+        alert('❌ ' + err.message + '\n\n' + (language === 'he' ? 'נסה שוב או צלם קלף אחר.' : 'Try again or scan a different card.'));
       }, 1000);
     }
   };
@@ -144,20 +168,20 @@ export default function Pokedex() {
 
     const records = apiData.records;
     if (!records || !records.length) {
-      throw new Error('לא נמצאו קלפים');
+      throw new Error(t('error'));
     }
 
     const id = records[0]._identification;
     console.log('Card data:', id);
     
-    // המרת סוגים לעברית
+    // המרת סוגים לשפה הנוכחית
     const typeNames = [];
     const typeColors = [];
     if (id.types) {
       id.types.forEach(type => {
         const mapped = typeMapping[type.toLowerCase()];
         if (mapped) {
-          typeNames.push(mapped.name);
+          typeNames.push(language === 'he' ? mapped.nameHe : mapped.nameEn);
           typeColors.push(mapped.color);
         }
       });
@@ -175,22 +199,43 @@ export default function Pokedex() {
     
     // יצירת טיפים
     const tips = [];
-    if (id.rarity?.toLowerCase().includes('ultra') || id.rarity?.toLowerCase().includes('secret')) {
-      tips.push('💎 קלף נדיר מאוד! שמור במכסה מגן');
-      tips.push('📈 ערך עתידי גבוה');
-    } else if (id.rarity?.toLowerCase().includes('holo') || id.rarity?.toLowerCase().includes('rare')) {
-      tips.push('✨ קלף הולוגרפי - שמור בטוב');
-      tips.push('💎 ערך אספני');
-    }
-    if (value > 50) {
-      tips.push('💰 קלף יקר! שמור במקום בטוח');
-    }
-    if (id.hp && parseInt(id.hp) > 200) {
-      tips.push('⚡ HP גבוה - קלף חזק במשחק!');
-    }
-    if (tips.length === 0) {
-      tips.push('📚 קלף נחמד לאוסף');
-      tips.push('✨ שמור בתנאים טובים');
+    if (language === 'he') {
+      if (id.rarity?.toLowerCase().includes('ultra') || id.rarity?.toLowerCase().includes('secret')) {
+        tips.push('💎 קלף נדיר מאוד! שמור במכסה מגן');
+        tips.push('📈 ערך עתידי גבוה');
+      } else if (id.rarity?.toLowerCase().includes('holo') || id.rarity?.toLowerCase().includes('rare')) {
+        tips.push('✨ קלף הולוגרפי - שמור בטוב');
+        tips.push('💎 ערך אספני');
+      }
+      if (value > 50) {
+        tips.push('💰 קלף יקר! שמור במקום בטוח');
+      }
+      if (id.hp && parseInt(id.hp) > 200) {
+        tips.push('⚡ HP גבוה - קלף חזק במשחק!');
+      }
+      if (tips.length === 0) {
+        tips.push('📚 קלף נחמד לאוסף');
+        tips.push('✨ שמור בתנאים טובים');
+      }
+    } else {
+      // English tips
+      if (id.rarity?.toLowerCase().includes('ultra') || id.rarity?.toLowerCase().includes('secret')) {
+        tips.push('💎 Very rare card! Store in protective sleeve');
+        tips.push('📈 High future value');
+      } else if (id.rarity?.toLowerCase().includes('holo') || id.rarity?.toLowerCase().includes('rare')) {
+        tips.push('✨ Holographic card - keep it safe');
+        tips.push('💎 Collector value');
+      }
+      if (value > 50) {
+        tips.push('💰 Valuable card! Keep in a safe place');
+      }
+      if (id.hp && parseInt(id.hp) > 200) {
+        tips.push('⚡ High HP - strong card in game!');
+      }
+      if (tips.length === 0) {
+        tips.push('📚 Nice addition to collection');
+        tips.push('✨ Keep in good condition');
+      }
     }
 
     return {
@@ -202,7 +247,7 @@ export default function Pokedex() {
       typeNames: typeNames,
       typeColors: typeColors,
       hp: id.hp || '?',
-      rarity: rarityMapping[id.rarity] || id.rarity || 'נפוץ',
+      rarity: rarityMapping[id.rarity] ? rarityMapping[id.rarity][language] : (id.rarity || (language === 'he' ? 'נפוץ' : 'Common')),
       rarityText: id.rarity || 'Common',
       stars: id.rarity?.toLowerCase().includes('ultra') ? '⭐⭐⭐⭐⭐' : 
              id.rarity?.toLowerCase().includes('rare') ? '⭐⭐⭐⭐' : '⭐⭐',
@@ -246,10 +291,13 @@ export default function Pokedex() {
   return (
     <div className={styles.container}>
       <Head>
-        <title>Pokido - פוקידו</title>
+        <title>Pokido - {language === 'he' ? 'פוקידו' : 'Pokido'}</title>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;700;900&display=swap" rel="stylesheet" />
       </Head>
+
+      {/* Language Toggle */}
+      <LanguageToggle />
 
       {/* Background Pattern */}
       <div className={styles.bgPattern}></div>
@@ -297,10 +345,10 @@ export default function Pokedex() {
                   <div className={styles.pokeballLarge}>
                     <div className={styles.pokeballButton}></div>
                   </div>
-                  <h2 className={styles.welcomeTitle}>Pokido</h2>
-                  <p className={styles.welcomeText}>מכשיר זיהוי קלפי פוקימון</p>
+                  <h2 className={styles.welcomeTitle}>{t('welcomeTitle')}</h2>
+                  <p className={styles.welcomeText}>{t('welcomeSubtitle')}</p>
                   <button className={styles.openBtn} onClick={openPokedex}>
-                    פתח את הפוקידקס
+                    {t('openPokedex')}
                   </button>
                 </div>
               )}
@@ -318,22 +366,22 @@ export default function Pokedex() {
                       className={styles.hidden}
                     />
                   </label>
-                  <p className={styles.uploadText}>העלה קלף פוקימון</p>
-                  <p className={styles.uploadSubtext}>לחץ כדי לצלם או לבחור תמונה</p>
+                  <p className={styles.uploadText}>{t('uploadTitle')}</p>
+                  <p className={styles.uploadSubtext}>{t('uploadSubtitle')}</p>
                 </div>
               )}
 
               {view === 'preview' && (
                 <div className={styles.previewScreen}>
                   <div className={styles.previewImageContainer}>
-                    <img src={image} alt="קלף" className={styles.previewImage} />
+                    <img src={image} alt={language === 'he' ? 'קלף' : 'Card'} className={styles.previewImage} />
                   </div>
                   <div className={styles.actionButtons}>
                     <button onClick={analyzeCard} className={styles.scanBtn}>
-                      🔍 סרוק
+                      {t('scan')}
                     </button>
                     <button onClick={reset} className={styles.backBtn}>
-                      ❌ ביטול
+                      {t('cancel')}
                     </button>
                   </div>
                 </div>
@@ -417,7 +465,7 @@ export default function Pokedex() {
                       <span className={styles.rarityText}>{result.rarityText}</span>
                     </div>
                     <div className={styles.valueDisplay}>
-                      <span className={styles.valueLabel}>ערך משוער</span>
+                      <span className={styles.valueLabel}>{t('estimatedValue')}</span>
                       <span className={styles.valueAmount}>₪{result.value.toLocaleString()}</span>
                     </div>
                     
@@ -448,7 +496,7 @@ export default function Pokedex() {
 
                   {/* Tips */}
                   <div className={styles.tipsSection}>
-                    <h4>💡 טיפים</h4>
+                    <h4>{t('tips')}</h4>
                     {result.tips.map((tip, i) => (
                       <div key={i} className={styles.tip}>{tip}</div>
                     ))}
@@ -456,25 +504,25 @@ export default function Pokedex() {
                   
                   {/* פרטים נוספים */}
                   <div className={styles.detailsSection}>
-                    <h4>📋 פרטי קלף</h4>
+                    <h4>{t('cardDetails')}</h4>
                     
                     {result.set && (
                       <div className={styles.detailRow}>
-                        <span>סט:</span>
-                        <span>{result.set} {result.setTotal ? `(${result.setTotal} קלפים)` : ''}</span>
+                        <span>{t('set')}:</span>
+                        <span>{result.set} {result.setTotal ? `(${result.setTotal} ${t('cards')})` : ''}</span>
                       </div>
                     )}
                     
                     {result.illustrator && (
                       <div className={styles.detailRow}>
-                        <span>מאייר:</span>
+                        <span>{t('illustrator')}:</span>
                         <span>{result.illustrator}</span>
                       </div>
                     )}
                     
                     {result.attacks && result.attacks.length > 0 && (
                       <div className={styles.attacksSection}>
-                        <h5>⚔️ התקפות</h5>
+                        <h5>{t('attacks')}</h5>
                         {result.attacks.map((attack, i) => (
                           <div key={i} className={styles.attackRow}>
                             <span className={styles.attackName}>{attack.name}</span>
@@ -486,14 +534,14 @@ export default function Pokedex() {
                     
                     {result.weaknesses && result.weaknesses.length > 0 && (
                       <div className={styles.detailRow}>
-                        <span>חולשה:</span>
+                        <span>{t('weakness')}:</span>
                         <span>{result.weaknesses.map(w => `${w.type} ${w.value}`).join(', ')}</span>
                       </div>
                     )}
                     
                     {result.retreat && (
                       <div className={styles.detailRow}>
-                        <span>נסיגה:</span>
+                        <span>{t('retreat')}:</span>
                         <span>{result.retreat} ⭐</span>
                       </div>
                     )}
@@ -550,11 +598,11 @@ export default function Pokedex() {
           <div className={styles.actionSection}>
             {view === 'result' && (
               <button onClick={reset} className={styles.resetBtn}>
-                🔄 חדש
+                {t('newScan')}
               </button>
             )}
             <button onClick={closePokedex} className={styles.closeBtn}>
-              ✕ סגור
+              {t('close')}
             </button>
           </div>
 
@@ -572,7 +620,7 @@ export default function Pokedex() {
       {/* Footer */}
       <footer className={styles.footer}>
         <p>Pokido © 2026</p>
-        <p>Powered by Gemini AI + TCGdex</p>
+        <p>{t('poweredBy')}</p>
       </footer>
     </div>
   );
