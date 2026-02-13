@@ -165,6 +165,7 @@ async function formatCardData(card, isJapanese = false) {
     nameEn: card.name, // שם באנגלית (או יפנית לפי השפה)
     nameJa: isJapanese ? card.name : null,
     number: card.localId || card.id,
+    setTotal: card.set?.cardCount?.official || card.set?.cardCount?.total || null,
     set: card.set?.name || 'Unknown',
     setId: card.set?.id,
     rarity: card.rarity || 'Common',
@@ -367,6 +368,7 @@ export default async function handler(req, res) {
         _identification: {
           pokemon_name: cardData.name,
           card_number: cardData.number,
+          set_total: cardData.setTotal,
           set: cardData.set,
           rarity: cardData.rarity,
           description: cardData.description,

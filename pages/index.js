@@ -195,7 +195,9 @@ export default function Pokedex() {
 
     return {
       name: id.pokemon_name || id.name,
-      number: `#${id.card_number || id.number || '???'}`,
+      number: id.set_total ? `#${id.card_number || id.number || '???'}/${id.set_total}` : `#${id.card_number || id.number || '???'}`,
+      displayNumber: id.card_number || id.number || '???',
+      setTotal: id.set_total,
       types: id.types || [],
       typeNames: typeNames,
       typeColors: typeColors,
@@ -463,7 +465,7 @@ export default function Pokedex() {
                     {result.set && (
                       <div className={styles.detailRow}>
                         <span>סט:</span>
-                        <span>{result.set}</span>
+                        <span>{result.set} {result.setTotal ? `(${result.setTotal} קלפים)` : ''}</span>
                       </div>
                     )}
                     
