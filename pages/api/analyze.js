@@ -170,9 +170,11 @@ async function analyzeImageWithGemini(imagePath) {
   const base64Image = imageBuffer.toString('base64');
 
   const prompt = `Analyze this Pokemon card image and extract:
-1. Pokemon name (exact name, e.g., "Pikachu", "Charizard", "Mew", "Kingdra GX")
-2. Card number if visible (e.g., "25/102", "18/70")
-3. Set name if visible
+1. Pokemon name - Return the ENGLISH name even if the card is in Japanese or other language (e.g., Japanese "イベルタル" should return "Yveltal", "ピカチュウ" should return "Pikachu")
+2. Card number if visible (e.g., "25/102", "18/70", "035/064")
+3. Set name if visible (in any language)
+
+The card may be in Japanese, English, or other languages. Always identify the Pokemon and return its English name.
 
 Return ONLY a JSON object in this exact format:
 {
