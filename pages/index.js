@@ -403,10 +403,6 @@ export default function Pokedex() {
                           <span className={styles.statLabel}>HP</span>
                           <span className={styles.statValue}>{result.hp}</span>
                         </div>
-                        <div className={styles.stat}>
-                          <span className={styles.statLabel}>כוח</span>
-                          <span className={styles.statValue}>{result.power}</span>
-                        </div>
                       </div>
 
                       {/* Description */}
@@ -575,7 +571,7 @@ export default function Pokedex() {
 
       {/* Footer */}
       <footer className={styles.footer}>
-        <p>Pokido © 2026 - עידו וחברים 🎴</p>
+        <p>Pokido © 2026</p>
         <p>Powered by Gemini AI + TCGdex</p>
       </footer>
     </div>
