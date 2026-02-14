@@ -410,6 +410,7 @@ export default async function handler(req, res) {
           card_number: cardData.number,
           set_total: cardData.setTotal,
           set: cardData.set,
+          setId: cardData.setId,
           rarity: cardData.rarity,
           description: cardData.description,
           image: cardData.image,
