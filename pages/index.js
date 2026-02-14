@@ -738,6 +738,61 @@ export default function Pokedex() {
                     <span className={styles.valueLabel}>{t('estimatedValue')}</span>
                     <span className={styles.valueAmount}>₪{result.value.toLocaleString()}</span>
                   </div>
+                  
+                  {/* פירוט מחירים */}
+                  {result.prices && (result.prices.cardmarket || result.prices.tcgplayer) && (
+                    <div className={styles.priceDetails}>
+                      {result.prices.cardmarket?.trend && (
+                        <div className={styles.priceRow}>
+                          <span>Cardmarket Trend:</span>
+                          <span>€{result.prices.cardmarket.trend}</span>
+                        </div>
+                      )}
+                      {result.prices.tcgplayer?.marketPrice && (
+                        <div className={styles.priceRow}>
+                          <span>TCGplayer Market:</span>
+                          <span>${result.prices.tcgplayer.marketPrice}</span>
+                        </div>
+                      )}
+                      {result.prices.tcgplayer?.lowPrice && (
+                        <div className={styles.priceRow}>
+                          <span>Low-High:</span>
+                          <span>${result.prices.tcgplayer.lowPrice} - ${result.prices.tcgplayer.highPrice}</span>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                {/* פרטים נוספים */}
+                <div className={styles.detailsSection}>
+                  <h4>{t('cardDetails')}</h4>
+                  
+                  {result.set && (
+                    <div className={styles.detailRow}>
+                      <span>{t('set')}:</span>
+                      <span>{result.set} {result.setTotal ? `(${result.setTotal} ${t('cards')})` : ''}</span>
+                    </div>
+                  )}
+                  
+                  {result.illustrator && (
+                    <div className={styles.detailRow}>
+                      <span>{t('illustrator')}:</span>
+                      <span>{result.illustrator}</span>
+                    </div>
+                  )}
+                  
+                  {result.attacks && result.attacks.length > 0 && (
+                    <div className={styles.attacksSection}>
+                      <h5>{t('attacks')}</h5>
+                      {result.attacks.map((attack, i) => (
+                        <div key={i} className={styles.attackRow}>
+                          <span className={styles.attackName}>{attack.name}</span>
+                          <span className={styles.attackDamage}>{attack.damage}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 <div className={styles.savedBadge}>
@@ -774,8 +829,17 @@ export default function Pokedex() {
 
       {/* Card Modal */}
       {showCardModal && result?.image && (
-        <div className={styles.modal} onClick={() => setShowCardModal(false)}>
-          <div className={styles.modalContent}>
+        <div className={styles.cardModal} onClick={() => setShowCardModal(false)}>
+          <div className={styles.cardModalContent}>
+            <button 
+              className={styles.closeModal} 
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowCardModal(false);
+              }}
+            >
+              ✕
+            </button>
             <img src={result.image} alt={result.name} />
           </div>
         </div>
