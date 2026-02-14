@@ -90,9 +90,15 @@ export function CollectionProvider({ children }) {
     }).sort((a, b) => b.collected - a.collected);
   };
 
-  // Get cards for a specific set
+  // Get cards for a specific set, sorted by card number
   const getSetCards = (setId) => {
-    return collection[setId] || [];
+    const cards = collection[setId] || [];
+    return cards.sort((a, b) => {
+      // Extract numbers from card numbers (e.g., "25/102" -> 25)
+      const numA = parseInt(a.number) || 0;
+      const numB = parseInt(b.number) || 0;
+      return numA - numB;
+    });
   };
 
   // Get total stats

@@ -120,6 +120,8 @@ export default function Pokedex() {
   const [viewMode, setViewMode] = useState('grid'); // 'grid' or 'list'
   
   const fileInputRef = useRef(null);
+  const touchStartX = useRef(0);
+  const touchEndX = useRef(0);
   const setsWithStats = getSetsWithStats();
   const totalStats = getTotalStats();
 
@@ -877,7 +879,33 @@ export default function Pokedex() {
 
       {/* Card Modal - works for both result and album */}
       {showCardModal && (
-        <div className={styles.cardModal} onClick={() => setShowCardModal(false)}>
+        <div 
+          className={styles.cardModal} 
+          onClick={() => setShowCardModal(false)}
+          onTouchStart={(e) => {
+            touchStartX.current = e.touches[0].clientX;
+          }}
+          onTouchMove={(e) => {
+            touchEndX.current = e.touches[0].clientX;
+          }}
+          onTouchEnd={() => {
+            if (view !== 'set-view' || !currentSetId) return;
+            
+            const cards = getSetCards(currentSetId);
+            const diff = touchStartX.current - touchEndX.current;
+            const minSwipeDistance = 50;
+            
+            if (Math.abs(diff) > minSwipeDistance) {
+              if (diff > 0 && selectedCardIndex < cards.length - 1) {
+                // Swipe left -> next card
+                setSelectedCardIndex(prev => prev + 1);
+              } else if (diff < 0 && selectedCardIndex > 0) {
+                // Swipe right -> previous card
+                setSelectedCardIndex(prev => prev - 1);
+              }
+            }
+          }}
+        >
           <div className={styles.cardModalContent}>
             <button 
               className={styles.closeModal} 
@@ -888,6 +916,33 @@ export default function Pokedex() {
             >
               ✕
             </button>
+            
+            {view === 'set-view' && currentSetId && getSetCards(currentSetId).length > 1 && (
+              <>
+                <button 
+                  className={`${styles.navArrow} ${styles.navLeft}`}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (selectedCardIndex > 0) setSelectedCardIndex(prev => prev - 1);
+                  }}
+                  style={{ opacity: selectedCardIndex === 0 ? 0.3 : 1 }}
+                >
+                  ◀
+                </button>
+                <button 
+                  className={`${styles.navArrow} ${styles.navRight}`}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    const cards = getSetCards(currentSetId);
+                    if (selectedCardIndex < cards.length - 1) setSelectedCardIndex(prev => prev + 1);
+                  }}
+                  style={{ opacity: selectedCardIndex >= getSetCards(currentSetId).length - 1 ? 0.3 : 1 }}
+                >
+                  ▶
+                </button>
+              </>
+            )}
+            
             <img 
               src={
                 view === 'set-view' && currentSetId
@@ -896,6 +951,12 @@ export default function Pokedex() {
               } 
               alt="Card" 
             />
+            
+            {view === 'set-view' && currentSetId && (
+              <div className={styles.carouselIndicator}>
+                {selectedCardIndex + 1} / {getSetCards(currentSetId).length}
+              </div>
+            )}
           </div>
         </div>
       )}
