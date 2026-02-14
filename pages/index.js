@@ -766,6 +766,12 @@ export default function Pokedex() {
         </div>
       </main>
 
+      {/* Footer */}
+      <footer className={styles.footer}>
+        <p>Pokido © 2026</p>
+        <p>{t('poweredBy')}</p>
+      </footer>
+
       {/* Card Modal */}
       {showCardModal && result?.image && (
         <div className={styles.modal} onClick={() => setShowCardModal(false)}>
