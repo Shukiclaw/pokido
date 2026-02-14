@@ -467,7 +467,8 @@ html, body {
   background: linear-gradient(145deg, var(--screen-green) 0%, var(--screen-dark) 100%);
   border: 3px solid #555;
   border-radius: 5px;
-  min-height: 320px;
+  min-height: 400px;
+  max-height: 450px;
   position: relative;
   overflow: hidden;
   box-shadow: inset 0 0 20px rgba(0,0,0,0.2);
@@ -1504,7 +1505,6 @@ html, body {
 .actionButtons {
   display: flex;
   gap: 10px;
-  transform: rotate(-15deg);
 }
 
 .actionBtn {

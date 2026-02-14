@@ -381,7 +381,20 @@ export default function Pokedex() {
                        ident.flavorText || 
                        (language === 'he' ? 'אין תיאור זמין' : 'No description available');
     
-    const value = Math.floor(Math.random() * 500) + 50;
+    // Calculate value from real prices (convert to NIS)
+    let value = 0;
+    if (ident.prices?.cardmarket?.trend) {
+      value = Math.round(ident.prices.cardmarket.trend * 4); // Approximate EUR to NIS
+    } else if (ident.prices?.tcgplayer?.marketPrice) {
+      value = Math.round(ident.prices.tcgplayer.marketPrice * 3.5); // Approximate USD to NIS
+    } else if (ident.prices?.tcgplayer?.lowPrice) {
+      value = Math.round(ident.prices.tcgplayer.lowPrice * 3.5);
+    }
+    
+    // Fallback if no price found
+    if (value === 0) {
+      value = Math.floor(Math.random() * 50) + 10;
+    }
     
     const image = ident.image || 
                   ident.images?.large || 
