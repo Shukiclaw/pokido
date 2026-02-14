@@ -5,28 +5,37 @@ const CollectionContext = createContext();
 export function CollectionProvider({ children }) {
   const [collection, setCollection] = useState({});
   const [sets, setSets] = useState({});
+  const [isLoaded, setIsLoaded] = useState(false);
 
-  // Load collection from localStorage on mount
+  // Load collection from localStorage on mount (client-side only)
   useEffect(() => {
-    const saved = localStorage.getItem('pokido-collection');
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        setCollection(parsed.collection || {});
-        setSets(parsed.sets || {});
-      } catch (e) {
-        console.error('Failed to load collection:', e);
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('pokido-collection');
+      console.log('Loading from localStorage:', saved ? 'Found data' : 'No data'); // DEBUG
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          console.log('Parsed data:', { sets: Object.keys(parsed.sets || {}), collectionKeys: Object.keys(parsed.collection || {}) }); // DEBUG
+          setCollection(parsed.collection || {});
+          setSets(parsed.sets || {});
+        } catch (e) {
+          console.error('Failed to load collection:', e);
+        }
       }
+      setIsLoaded(true);
     }
   }, []);
 
-  // Save to localStorage whenever collection changes
+  // Save to localStorage whenever collection changes (but only after initial load)
   useEffect(() => {
-    localStorage.setItem('pokido-collection', JSON.stringify({
-      collection,
-      sets
-    }));
-  }, [collection, sets]);
+    if (isLoaded && typeof window !== 'undefined') {
+      console.log('Saving to localStorage:', { sets: Object.keys(sets), collectionKeys: Object.keys(collection) }); // DEBUG
+      localStorage.setItem('pokido-collection', JSON.stringify({
+        collection,
+        sets
+      }));
+    }
+  }, [collection, sets, isLoaded]);
 
   // Add a card to collection
   const addCard = (cardData) => {
@@ -119,6 +128,7 @@ export function CollectionProvider({ children }) {
     <CollectionContext.Provider value={{
       collection,
       sets,
+      isLoaded,
       addCard,
       getSetsWithStats,
       getSetCards,
