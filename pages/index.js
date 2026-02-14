@@ -100,7 +100,7 @@ function PokedexControls({ onUp, onDown, onLeft, onRight, onMenu, onA, onB, view
 
 export default function Pokedex() {
   const { t, language } = useLanguage();
-  const { addCard, getSetsWithStats, getSetCards, getTotalStats } = useCollection();
+  const { addCard, sets, getSetsWithStats, getSetCards, getTotalStats } = useCollection();
   const [view, setView] = useState('closed');
   const [image, setImage] = useState(null);
   const [selectedFile, setSelectedFile] = useState(null);
