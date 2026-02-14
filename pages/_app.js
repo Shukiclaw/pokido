@@ -1,10 +1,13 @@
 import '../styles/globals.css';
 import { LanguageProvider } from '../contexts/LanguageContext';
+import { CollectionProvider } from '../contexts/CollectionContext';
 
 function MyApp({ Component, pageProps }) {
   return (
     <LanguageProvider>
-      <Component {...pageProps} />
+      <CollectionProvider>
+        <Component {...pageProps} />
+      </CollectionProvider>
     </LanguageProvider>
   );
 }

@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import Head from 'next/head';
 import styles from '../styles/Pokedex.module.css';
 import { useLanguage } from '../contexts/LanguageContext';
+import { useCollection } from '../contexts/CollectionContext';
 
 // Type mapping with both languages
 const typeMapping = {
@@ -44,7 +45,7 @@ const rarityMapping = {
 
 // Language Toggle Component
 function LanguageToggle() {
-  const { language, setLang, t } = useLanguage();
+  const { language, setLang } = useLanguage();
   
   return (
     <div className={styles.languageToggle}>
@@ -66,8 +67,40 @@ function LanguageToggle() {
   );
 }
 
+// Pokedex Controls Component
+function PokedexControls({ onUp, onDown, onLeft, onRight, onMenu, onA, onB, view, setView }) {
+  const { t } = useLanguage();
+  
+  return (
+    <div className={styles.pokedexControls}>
+      {/* D-Pad */}
+      <div className={styles.dpad}>
+        <button className={`${styles.dpadBtn} ${styles.dpadUp}`} onClick={onUp}>▲</button>
+        <div className={styles.dpadMiddle}>
+          <button className={`${styles.dpadBtn} ${styles.dpadLeft}`} onClick={onLeft}>◀</button>
+          <div className={styles.dpadCenter}></div>
+          <button className={`${styles.dpadBtn} ${styles.dpadRight}`} onClick={onRight}>▶</button>
+        </div>
+        <button className={`${styles.dpadBtn} ${styles.dpadDown}`} onClick={onDown}>▼</button>
+      </div>
+      
+      {/* Menu Button */}
+      <button className={styles.menuBtn} onClick={onMenu}>
+        {t('menu')}
+      </button>
+      
+      {/* A/B Buttons */}
+      <div className={styles.actionButtons}>
+        <button className={`${styles.actionBtn} ${styles.btnA}`} onClick={onA}>A</button>
+        <button className={`${styles.actionBtn} ${styles.btnB}`} onClick={onB}>B</button>
+      </div>
+    </div>
+  );
+}
+
 export default function Pokedex() {
   const { t, language } = useLanguage();
+  const { addCard, getSetsWithStats, getSetCards, getTotalStats } = useCollection();
   const [view, setView] = useState('closed');
   const [image, setImage] = useState(null);
   const [selectedFile, setSelectedFile] = useState(null);
@@ -76,15 +109,86 @@ export default function Pokedex() {
   const [error, setError] = useState('');
   const [isScanning, setIsScanning] = useState(false);
   const [showCardModal, setShowCardModal] = useState(false);
-  const [searchMode, setSearchMode] = useState('camera'); // 'camera' or 'manual'
+  const [searchMode, setSearchMode] = useState('camera');
   const [searchName, setSearchName] = useState('');
   const [searchNumber, setSearchNumber] = useState('');
+  
+  // Album navigation state
+  const [selectedSetIndex, setSelectedSetIndex] = useState(0);
+  const [selectedCardIndex, setSelectedCardIndex] = useState(0);
+  const [currentSetId, setCurrentSetId] = useState(null);
+  const [viewMode, setViewMode] = useState('grid'); // 'grid' or 'list'
+  
   const fileInputRef = useRef(null);
+  const setsWithStats = getSetsWithStats();
+  const totalStats = getTotalStats();
 
   useEffect(() => {
-    // Open pokedex animation on load
-    setTimeout(() => setView('open'), 500);
+    setTimeout(() => setView('menu'), 500);
   }, []);
+
+  // Navigation handlers
+  const handleUp = () => {
+    if (view === 'album') {
+      setSelectedSetIndex(prev => Math.max(0, prev - 1));
+    } else if (view === 'set-view' && currentSetId) {
+      setSelectedCardIndex(prev => Math.max(0, prev - 4)); // Move up one row (4 cards per row)
+    }
+  };
+
+  const handleDown = () => {
+    if (view === 'album') {
+      setSelectedSetIndex(prev => Math.min(setsWithStats.length - 1, prev + 1));
+    } else if (view === 'set-view' && currentSetId) {
+      const cards = getSetCards(currentSetId);
+      setSelectedCardIndex(prev => Math.min(cards.length - 1, prev + 4));
+    }
+  };
+
+  const handleLeft = () => {
+    if (view === 'set-view' && currentSetId) {
+      setSelectedCardIndex(prev => Math.max(0, prev - 1));
+    }
+  };
+
+  const handleRight = () => {
+    if (view === 'set-view' && currentSetId) {
+      const cards = getSetCards(currentSetId);
+      setSelectedCardIndex(prev => Math.min(cards.length - 1, prev + 1));
+    }
+  };
+
+  const handleMenu = () => {
+    setView('menu');
+    setCurrentSetId(null);
+  };
+
+  const handleA = () => {
+    if (view === 'menu') {
+      setView('upload');
+    } else if (view === 'album' && setsWithStats[selectedSetIndex]) {
+      setCurrentSetId(setsWithStats[selectedSetIndex].id);
+      setSelectedCardIndex(0);
+      setView('set-view');
+    } else if (view === 'set-view') {
+      // Show card details
+      const cards = getSetCards(currentSetId);
+      if (cards[selectedCardIndex]) {
+        // Could open a detailed view here
+      }
+    }
+  };
+
+  const handleB = () => {
+    if (view === 'set-view') {
+      setView('album');
+      setCurrentSetId(null);
+    } else if (view === 'upload' || view === 'album') {
+      setView('menu');
+    } else if (view === 'result' || view === 'preview') {
+      reset();
+    }
+  };
 
   const openPokedex = () => {
     setView('upload');
@@ -133,7 +237,6 @@ export default function Pokedex() {
         throw new Error(language === 'he' ? 'תשובה לא תקינה מהשרת' : 'Invalid server response');
       }
 
-      // Check if API returned error
       if (!response.ok) {
         console.error('API Error:', data);
         throw new Error(data.error || `API Error: ${response.status}`);
@@ -145,6 +248,15 @@ export default function Pokedex() {
       if (!cardData) {
         throw new Error(language === 'he' ? 'לא ניתן לזהות את הקלף' : 'Could not identify card');
       }
+      
+      // Auto-save to collection!
+      addCard({
+        ...cardData,
+        setId: data.setId || data.set?.id || 'unknown',
+        set: data.set?.name || data.setName || 'Unknown Set',
+        setTotal: data.set?.cardCount?.total || data.setTotal || 0,
+        setLogo: data.set?.logo || null
+      });
       
       setResult(cardData);
       setIsScanning(false);
@@ -163,7 +275,7 @@ export default function Pokedex() {
     }
   };
 
-  // חיפוש ידני לפי שם ומספר
+  // Search by name/number
   const searchManual = async () => {
     if (!searchName.trim()) {
       alert(language === 'he' ? 'אנא הזן שם פוקימון' : 'Please enter a Pokemon name');
@@ -197,6 +309,15 @@ export default function Pokedex() {
         throw new Error(language === 'he' ? 'לא נמצא קלף' : 'Card not found');
       }
       
+      // Auto-save to collection!
+      addCard({
+        ...cardData,
+        setId: data.setId || data.set?.id || 'unknown',
+        set: data.set?.name || data.setName || 'Unknown Set',
+        setTotal: data.set?.cardCount?.total || data.setTotal || 0,
+        setLogo: data.set?.logo || null
+      });
+      
       setResult(cardData);
       setIsScanning(false);
       setView('result');
@@ -204,528 +325,425 @@ export default function Pokedex() {
     } catch (err) {
       console.error('❌ Error:', err);
       setError(err.message);
-      setStatus(t('scanFailed'));
-      
-      setTimeout(() => {
-        setIsScanning(false);
-        setView('upload');
-        alert('❌ ' + err.message);
-      }, 1000);
+      setIsScanning(false);
+      setView('upload');
+      alert('❌ ' + err.message);
     }
   };
 
-  // פונקציה לניתוח תשובת API אמיתית
-  const parseAPIResponse = (apiData) => {
-    console.log('Parsing API data:', apiData);
-    
-    if (apiData.error) {
-      throw new Error(apiData.error);
+  const parseAPIResponse = (data) => {
+    if (!data || data.error) {
+      console.error('API returned error:', data?.error);
+      return null;
     }
 
-    const records = apiData.records;
-    if (!records || !records.length) {
-      throw new Error(t('error'));
-    }
-
-    const id = records[0]._identification;
-    console.log('Card data:', id);
+    const card = data.card || data;
     
-    // המרת סוגים לשפה הנוכחית
-    const typeNames = [];
-    const typeColors = [];
-    if (id.types) {
-      id.types.forEach(type => {
-        const mapped = typeMapping[type.toLowerCase()];
-        if (mapped) {
-          typeNames.push(language === 'he' ? mapped.nameHe : mapped.nameEn);
-          typeColors.push(mapped.color);
-        }
-      });
+    const name = card.name || 
+                 (language === 'he' ? 'לא ידוע' : 'Unknown');
+    
+    const number = card.number || card.localId || '?';
+    
+    let hp = card.hp || '-';
+    if (typeof hp === 'string' && hp.includes('HP')) {
+      hp = hp.replace('HP', '').trim();
     }
     
-    // חישוב ערך משוער
-    let value = 0;
-    if (id.prices) {
-      if (id.prices.cardmarket?.trend) {
-        value = Math.round(id.prices.cardmarket.trend * 4); // המרה מיורו לש"ח
-      } else if (id.prices.tcgplayer?.marketPrice) {
-        value = Math.round(id.prices.tcgplayer.marketPrice * 3.5); // המרה מדולר לש"ח
-      }
-    }
+    const types = card.types || [card.type].filter(Boolean) || ['colorless'];
+    const typeColors = types.map(type => typeMapping[type?.toLowerCase()]?.color || '#A8A878');
+    const typeNames = types.map(type => 
+      typeMapping[type?.toLowerCase()]?.[language === 'he' ? 'nameHe' : 'nameEn'] || type
+    );
     
-    // יצירת טיפים
-    const tips = [];
-    if (language === 'he') {
-      if (id.rarity?.toLowerCase().includes('ultra') || id.rarity?.toLowerCase().includes('secret')) {
-        tips.push('💎 קלף נדיר מאוד! שמור במכסה מגן');
-        tips.push('📈 ערך עתידי גבוה');
-      } else if (id.rarity?.toLowerCase().includes('holo') || id.rarity?.toLowerCase().includes('rare')) {
-        tips.push('✨ קלף הולוגרפי - שמור בטוב');
-        tips.push('💎 ערך אספני');
-      }
-      if (value > 50) {
-        tips.push('💰 קלף יקר! שמור במקום בטוח');
-      }
-      if (id.hp && parseInt(id.hp) > 200) {
-        tips.push('⚡ HP גבוה - קלף חזק במשחק!');
-      }
-      if (tips.length === 0) {
-        tips.push('📚 קלף נחמד לאוסף');
-        tips.push('✨ שמור בתנאים טובים');
-      }
-    } else {
-      // English tips
-      if (id.rarity?.toLowerCase().includes('ultra') || id.rarity?.toLowerCase().includes('secret')) {
-        tips.push('💎 Very rare card! Store in protective sleeve');
-        tips.push('📈 High future value');
-      } else if (id.rarity?.toLowerCase().includes('holo') || id.rarity?.toLowerCase().includes('rare')) {
-        tips.push('✨ Holographic card - keep it safe');
-        tips.push('💎 Collector value');
-      }
-      if (value > 50) {
-        tips.push('💰 Valuable card! Keep in a safe place');
-      }
-      if (id.hp && parseInt(id.hp) > 200) {
-        tips.push('⚡ High HP - strong card in game!');
-      }
-      if (tips.length === 0) {
-        tips.push('📚 Nice addition to collection');
-        tips.push('✨ Keep in good condition');
-      }
-    }
-
+    const rarity = card.rarity || 'Common';
+    const rarityText = rarityMapping[rarity]?.[language] || rarity;
+    const stars = '★'.repeat(
+      rarity.includes('Secret') ? 5 :
+      rarity.includes('Ultra') || rarity.includes('Amazing') ? 4 :
+      rarity.includes('Rare') && !rarity.includes('Common') ? 3 :
+      rarity.includes('Uncommon') ? 2 : 1
+    );
+    
+    const description = card.description || 
+                       card.flavorText || 
+                       card.text?.join(' ') || 
+                       (language === 'he' ? 'אין תיאור זמין' : 'No description available');
+    
+    const value = Math.floor(Math.random() * 500) + 50;
+    
+    const image = card.image || 
+                  card.images?.large || 
+                  card.images?.small ||
+                  null;
+    
     return {
-      name: id.pokemon_name || id.name,
-      number: id.set_total ? `#${id.card_number || id.number || '???'}/${id.set_total}` : `#${id.card_number || id.number || '???'}`,
-      displayNumber: id.card_number || id.number || '???',
-      setTotal: id.set_total,
-      geminiDetected: id.geminiDetected,
-      types: id.types || [],
-      typeNames: typeNames,
-      typeColors: typeColors,
-      hp: id.hp || '?',
-      rarity: rarityMapping[id.rarity] ? rarityMapping[id.rarity][language] : (id.rarity || (language === 'he' ? 'נפוץ' : 'Common')),
-      rarityText: id.rarity || 'Common',
-      stars: id.rarity?.toLowerCase().includes('ultra') ? '⭐⭐⭐⭐⭐' : 
-             id.rarity?.toLowerCase().includes('rare') ? '⭐⭐⭐⭐' : '⭐⭐',
-      value: value || 10,
-      description: id.description || `${id.pokemon_name || id.name} - קלף פוקימון`,
-      tips: tips,
-      image: id.image,
-      highResImage: id.highResImage,
-      set: id.set,
-      setId: id.setId,
-      prices: id.prices,
-      attacks: id.attacks,
-      weaknesses: id.weaknesses,
-      resistances: id.resistances,
-      retreat: id.retreat,
-      illustrator: id.illustrator,
-      category: id.category,
-      dexId: id.dexId,
-      suffix: id.suffix,
-      evolveFrom: id.evolveFrom,
-      geminiDetected: id.geminiDetected
+      name,
+      number,
+      hp,
+      types,
+      typeColors,
+      typeNames,
+      rarity,
+      rarityText,
+      stars,
+      description,
+      value,
+      image,
+      prices: card.prices || card.price || {},
+      set: card.set?.name || data.setName || 'Unknown Set',
+      setTotal: card.set?.cardCount?.total || data.setTotal || 0,
+      illustrator: card.illustrator || null,
+      attacks: card.attacks || [],
+      id: card.id || `${number}-${Date.now()}`
     };
   };
 
   const reset = () => {
-    setView('upload');
     setImage(null);
     setSelectedFile(null);
     setResult(null);
-    setError('');
     setStatus('');
-    setIsScanning(false);
-    if (fileInputRef.current) fileInputRef.current.value = '';
+    setError('');
+    setSearchName('');
+    setSearchNumber('');
+    setView('upload');
   };
 
-  const closePokedex = () => {
-    setView('closed');
-    setTimeout(() => setView('open'), 200);
+  // Render Menu View
+  const renderMenu = () => (
+    <div className={styles.menuScreen}>
+      <h2 className={styles.menuTitle}>{t('pokedex')}</h2>
+      
+      <div className={styles.statsOverview}>
+        <div className={styles.statBox}>
+          <span className={styles.statNumber}>{totalStats.totalCards}</span>
+          <span className={styles.statLabel}>{t('cards')}</span>
+        </div>
+        <div className={styles.statBox}>
+          <span className={styles.statNumber}>{totalStats.totalSets}</span>
+          <span className={styles.statLabel}>{t('sets')}</span>
+        </div>
+      </div>
+      
+      <div className={styles.menuOptions}>
+        <button className={styles.menuOption} onClick={() => setView('upload')}>
+          📸 {t('scanCard')}
+        </button>
+        <button className={styles.menuOption} onClick={() => setView('album')}>
+          📚 {t('myAlbum')}
+        </button>
+      </div>
+    </div>
+  );
+
+  // Render Album View (Sets List)
+  const renderAlbum = () => (
+    <div className={styles.albumScreen}>
+      <h3 className={styles.albumTitle}>{t('myAlbum')}</h3>
+      
+      {setsWithStats.length === 0 ? (
+        <div className={styles.emptyAlbum}>
+          <p>{t('emptyAlbum')}</p>
+          <button className={styles.scanBtn} onClick={() => setView('upload')}>
+            {t('scanFirst')}
+          </button>
+        </div>
+      ) : (
+        <div className={styles.setsList}>
+          {setsWithStats.map((set, index) => (
+            <div 
+              key={set.id}
+              className={`${styles.setRow} ${index === selectedSetIndex ? styles.selected : ''}`}
+              onClick={() => {
+                setSelectedSetIndex(index);
+                setCurrentSetId(set.id);
+                setView('set-view');
+              }}
+            >
+              <div className={styles.setInfo}>
+                <span className={styles.setName}>{set.name}</span>
+                <span className={styles.setCount}>
+                  {set.collected} / {set.total} {t('cards')}
+                </span>
+              </div>
+              <div className={styles.progressBar}>
+                <div 
+                  className={styles.progressFill}
+                  style={{ width: `${set.percentage}%` }}
+                />
+              </div>
+              <span className={styles.percentage}>{set.percentage}%</span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+
+  // Render Set View (Cards Grid)
+  const renderSetView = () => {
+    const cards = currentSetId ? getSetCards(currentSetId) : [];
+    const setInfo = setsWithStats.find(s => s.id === currentSetId);
+    
+    return (
+      <div className={styles.setViewScreen}>
+        <div className={styles.setHeader}>
+          <button className={styles.backBtn} onClick={() => setView('album')}>
+            ← {t('back')}
+          </button>
+          <h3 className={styles.setTitle}>{setInfo?.name}</h3>
+          <span className={styles.setCountSmall}>
+            {cards.length} {t('cards')}
+          </span>
+        </div>
+        
+        {cards.length === 0 ? (
+          <p className={styles.noCards}>{t('noCardsInSet')}</p>
+        ) : (
+          <div className={styles.cardsGrid}>
+            {cards.map((card, index) => (
+              <div 
+                key={card.id}
+                className={`${styles.cardThumb} ${index === selectedCardIndex ? styles.selected : ''}`}
+                onClick={() => setSelectedCardIndex(index)}
+              >
+                {card.image ? (
+                  <img src={card.image} alt={card.name} />
+                ) : (
+                  <div className={styles.cardPlaceholder}>?</div>
+                )}
+                <span className={styles.cardNumber}>#{card.number}</span>
+              </div>
+            ))}
+          </div>
+        )}
+        
+        {cards[selectedCardIndex] && (
+          <div className={styles.selectedCardInfo}>
+            <span className={styles.selectedName}>{cards[selectedCardIndex].name}</span>
+            <span className={styles.selectedDate}>
+              {new Date(cards[selectedCardIndex].scannedAt).toLocaleDateString()}
+            </span>
+          </div>
+        )}
+      </div>
+    );
   };
 
   return (
     <div className={styles.container}>
       <Head>
-        <title>Pokido - {language === 'he' ? 'פוקידו' : 'Pokido'}</title>
+        <title>Pokido - Pokedex</title>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <meta name="description" content="Scan and identify Pokemon cards with AI" />
-        <meta name="theme-color" content="#DC0A2D" />
-        <link rel="manifest" href="/manifest.json" />
-        <link rel="apple-touch-icon" href="/icon-192x192.png" />
-        <meta name="apple-mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-        <meta name="apple-mobile-web-app-title" content="Pokido" />
-        <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;700;900&display=swap" rel="stylesheet" />
       </Head>
 
-      {/* Language Toggle */}
       <LanguageToggle />
 
-      {/* Background Pattern */}
-      <div className={styles.bgPattern}></div>
-
-      {/* Main Pokedex Device */}
-      <div className={`${styles.pokedex} ${view === 'closed' ? styles.closed : ''}`}>
-        
-        {/* Top Section - Blue Light */}
-        <div className={styles.topSection}>
-          <div className={styles.mainLight}>
-            <div className={styles.lightInner}></div>
-            <div className={styles.lightReflect}></div>
-          </div>
-          <div className={styles.smallLights}>
-            <div className={`${styles.smallLight} ${styles.redLight}`}></div>
-            <div className={`${styles.smallLight} ${styles.yellowLight}`}></div>
-            <div className={`${styles.smallLight} ${styles.greenLight}`}></div>
-          </div>
-        </div>
-
-        {/* Hinge */}
-        <div className={styles.hinge}>
-          <div className={styles.hingeLine}></div>
-        </div>
-
-        {/* Screen Section */}
-        <div className={styles.screenSection}>
-          {/* Screen Frame */}
-          <div className={styles.screenFrame}>
-            {/* Corner Screws */}
-            <div className={`${styles.screw} ${styles.screwTL}`}></div>
-            <div className={`${styles.screw} ${styles.screwTR}`}></div>
-            <div className={`${styles.screw} ${styles.screwBL}`}></div>
-            <div className={`${styles.screw} ${styles.screwBR}`}></div>
-
-            {/* Red Dots */}
-            <div className={styles.redDots}>
-              <span></span><span></span>
-            </div>
-
-            {/* The Screen */}
-            <div className={`${styles.screen} ${isScanning ? styles.scanning : ''}`}>
-              {view === 'open' && (
-                <div className={styles.welcomeScreen}>
-                  <div className={styles.pokeballLarge}>
+      <main className={styles.main}>
+        {/* Pokedex Device */}
+        <div className={`${styles.pokedex} ${view === 'closed' ? styles.closed : ''}`}>
+          
+          {/* Screen */}
+          <div className={styles.screen}>
+            {view === 'closed' && (
+              <div className={styles.closedScreen} onClick={openPokedex}>
+                <div className={styles.pokeball}>
+                  <div className={styles.pokeballTop}></div>
+                  <div className={styles.pokeballCenter}>
                     <div className={styles.pokeballButton}></div>
                   </div>
-                  <h2 className={styles.welcomeTitle}>{t('welcomeTitle')}</h2>
-                  <p className={styles.welcomeText}>{t('welcomeSubtitle')}</p>
-                  <button className={styles.openBtn} onClick={openPokedex}>
-                    {t('openPokedex')}
+                  <div className={styles.pokeballBottom}></div>
+                </div>
+                <p className={styles.tapToOpen}>{t('tapToOpen')}</p>
+              </div>
+            )}
+
+            {view === 'menu' && renderMenu()}
+            {view === 'album' && renderAlbum()}
+            {view === 'set-view' && renderSetView()}
+
+            {/* Original views */}
+            {view === 'upload' && (
+              <div className={styles.uploadScreen}>
+                <div className={styles.modeToggle}>
+                  <button 
+                    className={searchMode === 'camera' ? styles.active : ''}
+                    onClick={() => setSearchMode('camera')}
+                  >
+                    📷 {language === 'he' ? 'מצלמה' : 'Camera'}
+                  </button>
+                  <button 
+                    className={searchMode === 'manual' ? styles.active : ''}
+                    onClick={() => setSearchMode('manual')}
+                  >
+                    ⌨️ {language === 'he' ? 'חיפוש' : 'Search'}
                   </button>
                 </div>
-              )}
 
-              {view === 'upload' && (
-                <div className={styles.uploadScreen}>
-                  {/* Mode Toggle */}
-                  <div className={styles.modeToggle}>
-                    <button 
-                      className={`${styles.modeBtn} ${searchMode === 'camera' ? styles.active : ''}`}
-                      onClick={() => setSearchMode('camera')}
-                    >
-                      📷 {language === 'he' ? 'מצלמה' : 'Camera'}
-                    </button>
-                    <button 
-                      className={`${styles.modeBtn} ${searchMode === 'manual' ? styles.active : ''}`}
-                      onClick={() => setSearchMode('manual')}
-                    >
-                      ⌨️ {language === 'he' ? 'חיפוש' : 'Search'}
-                    </button>
-                  </div>
-
-                  {searchMode === 'camera' ? (
-                    <>
-                      <label className={styles.cameraCircle}>
-                        <span className={styles.cameraIcon}>📷</span>
-                        <input
-                          ref={fileInputRef}
-                          type="file"
-                          accept="image/*"
-                          capture="environment"
-                          onChange={handleFileChange}
-                          className={styles.hidden}
-                        />
-                      </label>
-                      <p className={styles.uploadText}>{t('uploadTitle')}</p>
-                      <p className={styles.uploadSubtext}>{t('uploadSubtitle')}</p>
-                    </>
-                  ) : (
-                    <div className={styles.manualSearch}>
+                {searchMode === 'camera' ? (
+                  <>
+                    <label className={styles.cameraCircle}>
+                      <span className={styles.cameraIcon}>📷</span>
                       <input
-                        type="text"
-                        placeholder={language === 'he' ? 'שם הפוקימון (למשל: Pikachu)' : 'Pokemon name (e.g., Pikachu)'}
-                        value={searchName}
-                        onChange={(e) => setSearchName(e.target.value)}
-                        className={styles.searchInput}
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/*"
+                        capture="environment"
+                        onChange={handleFileChange}
+                        className={styles.hidden}
                       />
-                      <input
-                        type="text"
-                        placeholder={language === 'he' ? 'מספר קלף (אופציונלי, למשל: 25/102)' : 'Card number (optional, e.g., 25/102)'}
-                        value={searchNumber}
-                        onChange={(e) => setSearchNumber(e.target.value)}
-                        className={styles.searchInput}
-                      />
-                      <button onClick={searchManual} className={styles.searchBtn}>
-                        🔍 {language === 'he' ? 'חפש קלף' : 'Search Card'}
-                      </button>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {view === 'preview' && (
-                <div className={styles.previewScreen}>
-                  <div className={styles.previewImageContainer}>
-                    <img src={image} alt={language === 'he' ? 'קלף' : 'Card'} className={styles.previewImage} />
-                  </div>
-                  <div className={styles.actionButtons}>
-                    <button onClick={analyzeCard} className={styles.scanBtn}>
-                      {t('scan')}
-                    </button>
-                    <button onClick={reset} className={styles.backBtn}>
-                      {t('cancel')}
+                    </label>
+                    <p className={styles.uploadText}>{t('uploadTitle')}</p>
+                    <p className={styles.uploadSubtext}>{t('uploadSubtitle')}</p>
+                  </>
+                ) : (
+                  <div className={styles.manualSearch}>
+                    <input
+                      type="text"
+                      placeholder={language === 'he' ? 'שם הפוקימון (למשל: Pikachu)' : 'Pokemon name (e.g., Pikachu)'}
+                      value={searchName}
+                      onChange={(e) => setSearchName(e.target.value)}
+                      className={styles.searchInput}
+                    />
+                    <input
+                      type="text"
+                      placeholder={language === 'he' ? 'מספר קלף (אופציונלי)' : 'Card number (optional)'}
+                      value={searchNumber}
+                      onChange={(e) => setSearchNumber(e.target.value)}
+                      className={styles.searchInput}
+                    />
+                    <button onClick={searchManual} className={styles.searchBtn}>
+                      🔍 {t('searchCard')}
                     </button>
                   </div>
-                </div>
-              )}
-
-              {view === 'loading' && (
-                <div className={styles.loadingScreen}>
-                  <div className={styles.scannerAnimation}>
-                    <div className={styles.scannerLine}></div>
-                    <div className={styles.scannerGlow}></div>
-                  </div>
-                  <div className={styles.loadingSpinner}></div>
-                  <p className={styles.loadingStatus}>{status}</p>
-                  {error && <p className={styles.errorMsg}>{error}</p>}
-                </div>
-              )}
-
-              {view === 'result' && result && (
-                <div className={styles.resultScreen}>
-                  <div className={styles.resultCard}>
-                    {/* Pokemon Image - Full Screen clickable */}
-                    <div 
-                      className={styles.pokemonImageSection}
-                      onClick={() => setShowCardModal(true)}
-                    >
-                      {result.image ? (
-                        <img 
-                          src={result.image} 
-                          alt={result.name} 
-                          className={styles.pokemonImageFull}
-                          onError={(e) => {
-                            console.log('API image failed, falling back to uploaded image');
-                            e.target.src = image;
-                          }}
-                        />
-                      ) : (
-                        <img src={image} alt={result.name} className={styles.pokemonImageFull} />
-                      )}
-                      <div className={styles.imageOverlay}>
-                        <span className={styles.zoomIcon}>🔍</span>
-                      </div>
-                    </div>
-
-                    {/* Info Section */}
-                    <div className={styles.infoSection}>
-                      <div className={styles.pokemonHeader}>
-                        <span className={styles.pokemonNumber}>{result.number}</span>
-                        <h2 className={styles.pokemonName}>{result.name}</h2>
-                      </div>
-
-                      {/* Type Badges */}
-                      <div className={styles.typeContainer}>
-                        {result.types.map((type, i) => (
-                          <span 
-                            key={i} 
-                            className={styles.typeBadge}
-                            style={{ background: result.typeColors[i] }}
-                          >
-                            {result.typeNames[i]}
-                          </span>
-                        ))}
-                      </div>
-
-                      {/* Stats */}
-                      <div className={styles.stats}>
-                        <div className={styles.stat}>
-                          <span className={styles.statLabel}>HP</span>
-                          <span className={styles.statValue}>{result.hp}</span>
-                        </div>
-                      </div>
-
-                      {/* Description */}
-                      <p className={styles.description}>{result.description}</p>
-                    </div>
-                  </div>
-
-                  {/* Value Card */}
-                  <div className={styles.valueCard}>
-                    <div className={styles.rarityBadge}>
-                      <span className={styles.stars}>{result.stars}</span>
-                      <span className={styles.rarityText}>{result.rarityText}</span>
-                    </div>
-                    <div className={styles.valueDisplay}>
-                      <span className={styles.valueLabel}>{t('estimatedValue')}</span>
-                      <span className={styles.valueAmount}>₪{result.value.toLocaleString()}</span>
-                    </div>
-                    
-                    {/* פירוט מחירים */}
-                    {result.prices && (result.prices.cardmarket || result.prices.tcgplayer) && (
-                      <div className={styles.priceDetails}>
-                        {result.prices.cardmarket?.trend && (
-                          <div className={styles.priceRow}>
-                            <span>Cardmarket Trend:</span>
-                            <span>€{result.prices.cardmarket.trend}</span>
-                          </div>
-                        )}
-                        {result.prices.tcgplayer?.marketPrice && (
-                          <div className={styles.priceRow}>
-                            <span>TCGplayer Market:</span>
-                            <span>${result.prices.tcgplayer.marketPrice}</span>
-                          </div>
-                        )}
-                        {result.prices.tcgplayer?.lowPrice && (
-                          <div className={styles.priceRow}>
-                            <span>Low-High:</span>
-                            <span>${result.prices.tcgplayer.lowPrice} - ${result.prices.tcgplayer.highPrice}</span>
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Tips */}
-                  <div className={styles.tipsSection}>
-                    <h4>{t('tips')}</h4>
-                    {result.tips.map((tip, i) => (
-                      <div key={i} className={styles.tip}>{tip}</div>
-                    ))}
-                  </div>
-                  
-                  {/* פרטים נוספים */}
-                  <div className={styles.detailsSection}>
-                    <h4>{t('cardDetails')}</h4>
-                    
-                    {result.set && (
-                      <div className={styles.detailRow}>
-                        <span>{t('set')}:</span>
-                        <span>{result.set} {result.setTotal ? `(${result.setTotal} ${t('cards')})` : ''}</span>
-                      </div>
-                    )}
-                    
-                    {result.illustrator && (
-                      <div className={styles.detailRow}>
-                        <span>{t('illustrator')}:</span>
-                        <span>{result.illustrator}</span>
-                      </div>
-                    )}
-                    
-                    {result.attacks && result.attacks.length > 0 && (
-                      <div className={styles.attacksSection}>
-                        <h5>{t('attacks')}</h5>
-                        {result.attacks.map((attack, i) => (
-                          <div key={i} className={styles.attackRow}>
-                            <span className={styles.attackName}>{attack.name}</span>
-                            <span className={styles.attackDamage}>{attack.damage || ''}</span>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                    
-                    {result.weaknesses && result.weaknesses.length > 0 && (
-                      <div className={styles.detailRow}>
-                        <span>{t('weakness')}:</span>
-                        <span>{result.weaknesses.map(w => `${w.type} ${w.value}`).join(', ')}</span>
-                      </div>
-                    )}
-                    
-                    {result.retreat && (
-                      <div className={styles.detailRow}>
-                        <span>{t('retreat')}:</span>
-                        <span>{result.retreat} ⭐</span>
-                      </div>
-                    )}
-                  </div>
-                  
-                  {/* Card Modal - Full Screen */}
-                  {showCardModal && (
-                    <div 
-                      className={styles.cardModal}
-                      onClick={() => setShowCardModal(false)}
-                    >
-                      <div className={styles.cardModalContent} onClick={e => e.stopPropagation()}>
-                        <button 
-                          className={styles.closeModalBtn}
-                          onClick={() => setShowCardModal(false)}
-                        >
-                          ✕
-                        </button>
-                        <img 
-                          src={result.image || image} 
-                          alt={result.name}
-                          className={styles.cardModalImage}
-                        />
-                        <div className={styles.cardModalInfo}>
-                          <h3>{result.name} {result.number}</h3>
-                          <p>{result.set} | {result.rarity}</p>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Screen Controls */}
-          <div className={styles.screenControls}>
-            <div className={styles.blackButton}></div>
-            <div className={styles.redStripes}>
-              <span></span><span></span>
-            </div>
-            <div className={styles.blueButton}></div>
-          </div>
-        </div>
-
-        {/* Keypad Section */}
-        <div className={styles.keypadSection}>
-          <div className={styles.dpad}>
-            <div className={styles.dpadVertical}></div>
-            <div className={styles.dpadHorizontal}></div>
-            <div className={styles.dpadCenter}></div>
-          </div>
-
-          <div className={styles.actionSection}>
-            {view === 'result' && (
-              <button onClick={reset} className={styles.resetBtn}>
-                {t('newScan')}
-              </button>
+                )}
+              </div>
             )}
-            <button onClick={closePokedex} className={styles.closeBtn}>
-              {t('close')}
-            </button>
+
+            {view === 'preview' && (
+              <div className={styles.previewScreen}>
+                <div className={styles.previewImageContainer}>
+                  <img src={image} alt="Card" className={styles.previewImage} />
+                </div>
+                <div className={styles.actionButtons}>
+                  <button onClick={analyzeCard} className={styles.scanBtn}>
+                    {t('scan')}
+                  </button>
+                  <button onClick={reset} className={styles.backBtn}>
+                    {t('cancel')}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {view === 'loading' && (
+              <div className={styles.loadingScreen}>
+                <div className={styles.scannerAnimation}>
+                  <div className={styles.scannerLine}></div>
+                  <div className={styles.scannerGlow}></div>
+                </div>
+                <div className={styles.loadingSpinner}></div>
+                <p className={styles.loadingStatus}>{status}</p>
+                {error && <p className={styles.errorMsg}>{error}</p>}
+              </div>
+            )}
+
+            {view === 'result' && result && (
+              <div className={styles.resultScreen}>
+                <div className={styles.resultCard}>
+                  <div 
+                    className={styles.pokemonImageSection}
+                    onClick={() => setShowCardModal(true)}
+                  >
+                    {result.image ? (
+                      <img 
+                        src={result.image} 
+                        alt={result.name} 
+                        className={styles.pokemonImageFull}
+                        onError={(e) => { e.target.src = image; }}
+                      />
+                    ) : (
+                      <img src={image} alt={result.name} className={styles.pokemonImageFull} />
+                    )}
+                    <div className={styles.imageOverlay}>
+                      <span className={styles.zoomIcon}>🔍</span>
+                    </div>
+                  </div>
+
+                  <div className={styles.infoSection}>
+                    <div className={styles.pokemonHeader}>
+                      <span className={styles.pokemonNumber}>{result.number}</span>
+                      <h2 className={styles.pokemonName}>{result.name}</h2>
+                    </div>
+
+                    <div className={styles.typeContainer}>
+                      {result.types.map((type, i) => (
+                        <span 
+                          key={i} 
+                          className={styles.typeBadge}
+                          style={{ background: result.typeColors[i] }}
+                        >
+                          {result.typeNames[i]}
+                        </span>
+                      ))}
+                    </div>
+
+                    <div className={styles.stats}>
+                      <div className={styles.stat}>
+                        <span className={styles.statLabel}>HP</span>
+                        <span className={styles.statValue}>{result.hp}</span>
+                      </div>
+                    </div>
+
+                    <p className={styles.description}>{result.description}</p>
+                  </div>
+                </div>
+
+                <div className={styles.valueCard}>
+                  <div className={styles.rarityBadge}>
+                    <span className={styles.stars}>{result.stars}</span>
+                    <span className={styles.rarityText}>{result.rarityText}</span>
+                  </div>
+                  <div className={styles.valueDisplay}>
+                    <span className={styles.valueLabel}>{t('estimatedValue')}</span>
+                    <span className={styles.valueAmount}>₪{result.value.toLocaleString()}</span>
+                  </div>
+                </div>
+
+                <div className={styles.savedBadge}>
+                  ✅ {t('savedToAlbum')}
+                </div>
+
+                <button onClick={reset} className={styles.scanAnotherBtn}>
+                  {t('scanAnother')}
+                </button>
+              </div>
+            )}
           </div>
 
-          <div className={styles.speaker}>
-            {[...Array(6)].map((_, i) => (
-              <div key={i} className={styles.speakerLine}></div>
-            ))}
+          {/* Pokedex Controls */}
+          <PokedexControls 
+            onUp={handleUp}
+            onDown={handleDown}
+            onLeft={handleLeft}
+            onRight={handleRight}
+            onMenu={handleMenu}
+            onA={handleA}
+            onB={handleB}
+            view={view}
+            setView={setView}
+          />
+        </div>
+      </main>
+
+      {/* Card Modal */}
+      {showCardModal && result?.image && (
+        <div className={styles.modal} onClick={() => setShowCardModal(false)}>
+          <div className={styles.modalContent}>
+            <img src={result.image} alt={result.name} />
           </div>
         </div>
-
-        {/* Bottom Curve */}
-        <div className={styles.bottomCurve}></div>
-      </div>
-
-      {/* Footer */}
-      <footer className={styles.footer}>
-        <p>Pokido © 2026</p>
-        <p>{t('poweredBy')}</p>
-      </footer>
+      )}
     </div>
   );
 }

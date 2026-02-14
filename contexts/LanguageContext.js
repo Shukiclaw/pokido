@@ -13,6 +13,21 @@ export const translations = {
     welcomeTitle: 'Pokido',
     welcomeSubtitle: 'מכשיר זיהוי קלפי פוקימון',
     openPokedex: 'פתח את הפוקידקס',
+    tapToOpen: 'לחץ לפתיחה',
+    
+    // Menu
+    menu: 'תפריט',
+    pokedex: 'פוקידקס',
+    scanCard: 'סרוק קלף',
+    myAlbum: 'האלבום שלי',
+    
+    // Album
+    emptyAlbum: 'האלבום ריק!',
+    scanFirst: 'סרוק קלף ראשון',
+    noCardsInSet: 'אין קלפים בסט זה',
+    back: 'חזרה',
+    savedToAlbum: 'נשמר לאלבום!',
+    scanAnother: 'סרוק עוד קלף',
     
     // Upload screen
     uploadTitle: 'העלה קלף פוקימון',
@@ -68,6 +83,21 @@ export const translations = {
     welcomeTitle: 'Pokido',
     welcomeSubtitle: 'Pokemon Card Scanner',
     openPokedex: 'Open Pokedex',
+    tapToOpen: 'Tap to open',
+    
+    // Menu
+    menu: 'Menu',
+    pokedex: 'Pokedex',
+    scanCard: 'Scan Card',
+    myAlbum: 'My Album',
+    
+    // Album
+    emptyAlbum: 'Album is empty!',
+    scanFirst: 'Scan your first card',
+    noCardsInSet: 'No cards in this set',
+    back: 'Back',
+    savedToAlbum: 'Saved to album!',
+    scanAnother: 'Scan Another',
     
     // Upload screen
     uploadTitle: 'Upload Pokemon Card',
