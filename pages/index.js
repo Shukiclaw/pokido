@@ -256,7 +256,7 @@ export default function Pokedex() {
       const ident = data.records?.[0]?._identification;
       addCard({
         ...cardData,
-        setId: ident?.set_id || 'unknown',
+        setId: ident?.setId || ident?.set_id || 'unknown',
         set: ident?.set || 'Unknown Set',
         setTotal: ident?.set_total || 0
       });
@@ -316,7 +316,7 @@ export default function Pokedex() {
       const ident = data.records?.[0]?._identification;
       addCard({
         ...cardData,
-        setId: ident?.set_id || 'unknown',
+        setId: ident?.setId || ident?.set_id || 'unknown',
         set: ident?.set || 'Unknown Set',
         setTotal: ident?.set_total || 0
       });
