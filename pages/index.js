@@ -543,6 +543,24 @@ export default function Pokedex() {
         {/* Pokedex Device */}
         <div className={`${styles.pokedex} ${view === 'closed' ? styles.closed : ''}`}>
           
+          {/* Top Section - Blue Light */}
+          <div className={styles.topSection}>
+            <div className={styles.mainLight}>
+              <div className={styles.lightInner}></div>
+              <div className={styles.lightReflect}></div>
+            </div>
+            <div className={styles.smallLights}>
+              <div className={`${styles.smallLight} ${styles.redLight}`}></div>
+              <div className={`${styles.smallLight} ${styles.yellowLight}`}></div>
+              <div className={`${styles.smallLight} ${styles.greenLight}`}></div>
+            </div>
+          </div>
+
+          {/* Hinge */}
+          <div className={styles.hinge}>
+            <div className={styles.hingeLine}></div>
+          </div>
+          
           {/* Screen */}
           <div className={styles.screen}>
             {view === 'closed' && (
