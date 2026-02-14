@@ -725,9 +725,6 @@ export default function Pokedex() {
                     ) : (
                       <img src={image} alt={result.name} className={styles.pokemonImageFull} />
                     )}
-                    <div className={styles.imageOverlay}>
-                      <span className={styles.zoomIcon}>🔍</span>
-                    </div>
                   </div>
 
                   <div className={styles.infoSection}>
