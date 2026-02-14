@@ -33,15 +33,22 @@ export function CollectionProvider({ children }) {
     const setId = cardData.setId || 'unknown';
     const cardId = cardData.id || `${setId}-${cardData.number}`;
     
-    setSets(prev => ({
-      ...prev,
-      [setId]: {
-        id: setId,
-        name: cardData.set || 'Unknown Set',
-        total: cardData.setTotal || 0,
-        logo: cardData.setLogo || null
-      }
-    }));
+    console.log('Adding card:', { setId, cardId, name: cardData.name, set: cardData.set }); // DEBUG
+    
+    setSets(prev => {
+      console.log('Previous sets:', Object.keys(prev)); // DEBUG
+      const newSets = {
+        ...prev,
+        [setId]: {
+          id: setId,
+          name: cardData.set || 'Unknown Set',
+          total: cardData.setTotal || 0,
+          logo: cardData.setLogo || null
+        }
+      };
+      console.log('New sets:', Object.keys(newSets)); // DEBUG
+      return newSets;
+    });
 
     setCollection(prev => {
       const setCards = prev[setId] || [];

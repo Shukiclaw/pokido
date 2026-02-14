@@ -398,7 +398,7 @@ export default function Pokedex() {
       // Try different price fields
       const price = cm.trend || cm.avg || cm.avg1 || cm.avg7 || cm.avg30 || cm.low;
       if (price) {
-        value = Math.round(price * 4); // Approximate EUR to NIS
+        value = parseFloat((price * 4).toFixed(2)); // Approximate EUR to NIS, keep 2 decimals
         priceSource = 'cardmarket';
         console.log('Using cardmarket price:', price, '->', value); // DEBUG
       }
@@ -409,7 +409,7 @@ export default function Pokedex() {
       console.log('TCGplayer data:', tcg); // DEBUG
       const price = tcg.marketPrice || tcg.midPrice || tcg.lowPrice || tcg.highPrice;
       if (price) {
-        value = Math.round(price * 3.5); // Approximate USD to NIS
+        value = parseFloat((price * 3.5).toFixed(2)); // Approximate USD to NIS, keep 2 decimals
         priceSource = 'tcgplayer';
         console.log('Using tcgplayer price:', price, '->', value); // DEBUG
       }
@@ -788,7 +788,7 @@ export default function Pokedex() {
                   </div>
                   <div className={styles.valueDisplay}>
                     <span className={styles.valueLabel}>{t('estimatedValue')}</span>
-                    <span className={styles.valueAmount}>₪{result.value.toLocaleString()}</span>
+                    <span className={styles.valueAmount}>₪{result.value.toFixed(2)}</span>
                   </div>
                   
                   {/* פירוט מחירים */}
