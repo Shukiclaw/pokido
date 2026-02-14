@@ -352,6 +352,8 @@ export default function Pokedex() {
       return null;
     }
     
+    console.log('Prices from API:', ident.prices); // DEBUG
+    
     const name = ident.pokemon_name || 
                  (language === 'he' ? 'לא ידוע' : 'Unknown');
     
@@ -383,16 +385,36 @@ export default function Pokedex() {
     
     // Calculate value from real prices (convert to NIS)
     let value = 0;
-    if (ident.prices?.cardmarket?.trend) {
-      value = Math.round(ident.prices.cardmarket.trend * 4); // Approximate EUR to NIS
-    } else if (ident.prices?.tcgplayer?.marketPrice) {
-      value = Math.round(ident.prices.tcgplayer.marketPrice * 3.5); // Approximate USD to NIS
-    } else if (ident.prices?.tcgplayer?.lowPrice) {
-      value = Math.round(ident.prices.tcgplayer.lowPrice * 3.5);
+    let priceSource = '';
+    
+    console.log('Checking prices:', ident.prices); // DEBUG
+    
+    if (ident.prices?.cardmarket) {
+      const cm = ident.prices.cardmarket;
+      console.log('Cardmarket data:', cm); // DEBUG
+      // Try different price fields
+      const price = cm.trend || cm.avg || cm.avg1 || cm.avg7 || cm.avg30 || cm.low;
+      if (price) {
+        value = Math.round(price * 4); // Approximate EUR to NIS
+        priceSource = 'cardmarket';
+        console.log('Using cardmarket price:', price, '->', value); // DEBUG
+      }
+    } 
+    
+    if (value === 0 && ident.prices?.tcgplayer) {
+      const tcg = ident.prices.tcgplayer;
+      console.log('TCGplayer data:', tcg); // DEBUG
+      const price = tcg.marketPrice || tcg.midPrice || tcg.lowPrice || tcg.highPrice;
+      if (price) {
+        value = Math.round(price * 3.5); // Approximate USD to NIS
+        priceSource = 'tcgplayer';
+        console.log('Using tcgplayer price:', price, '->', value); // DEBUG
+      }
     }
     
     // Fallback if no price found
     if (value === 0) {
+      console.log('No price found, using random fallback'); // DEBUG
       value = Math.floor(Math.random() * 50) + 10;
     }
     
