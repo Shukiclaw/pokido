@@ -250,12 +250,12 @@ export default function Pokedex() {
       }
       
       // Auto-save to collection!
+      const ident = data.records?.[0]?._identification;
       addCard({
         ...cardData,
-        setId: data.setId || data.set?.id || 'unknown',
-        set: data.set?.name || data.setName || 'Unknown Set',
-        setTotal: data.set?.cardCount?.total || data.setTotal || 0,
-        setLogo: data.set?.logo || null
+        setId: ident?.set_id || 'unknown',
+        set: ident?.set || 'Unknown Set',
+        setTotal: ident?.set_total || 0
       });
       
       setResult(cardData);
@@ -310,12 +310,12 @@ export default function Pokedex() {
       }
       
       // Auto-save to collection!
+      const ident = data.records?.[0]?._identification;
       addCard({
         ...cardData,
-        setId: data.setId || data.set?.id || 'unknown',
-        set: data.set?.name || data.setName || 'Unknown Set',
-        setTotal: data.set?.cardCount?.total || data.setTotal || 0,
-        setLogo: data.set?.logo || null
+        setId: ident?.set_id || 'unknown',
+        set: ident?.set || 'Unknown Set',
+        setTotal: ident?.set_total || 0
       });
       
       setResult(cardData);
@@ -332,30 +332,43 @@ export default function Pokedex() {
   };
 
   const parseAPIResponse = (data) => {
+    console.log('Parsing API data:', data);
+    
     if (!data || data.error) {
       console.error('API returned error:', data?.error);
       return null;
     }
 
-    const card = data.card || data;
+    // Handle the API response format: { records: [{ _identification: {...} }] }
+    const records = data.records;
+    if (!records || !records.length) {
+      console.error('No records in API response');
+      return null;
+    }
+
+    const ident = records[0]._identification;
+    if (!ident) {
+      console.error('No _identification in record');
+      return null;
+    }
     
-    const name = card.name || 
+    const name = ident.pokemon_name || 
                  (language === 'he' ? 'לא ידוע' : 'Unknown');
     
-    const number = card.number || card.localId || '?';
+    const number = ident.card_number || ident.localId || '?';
     
-    let hp = card.hp || '-';
+    let hp = ident.hp || '-';
     if (typeof hp === 'string' && hp.includes('HP')) {
       hp = hp.replace('HP', '').trim();
     }
     
-    const types = card.types || [card.type].filter(Boolean) || ['colorless'];
+    const types = ident.types || [ident.type].filter(Boolean) || ['colorless'];
     const typeColors = types.map(type => typeMapping[type?.toLowerCase()]?.color || '#A8A878');
     const typeNames = types.map(type => 
       typeMapping[type?.toLowerCase()]?.[language === 'he' ? 'nameHe' : 'nameEn'] || type
     );
     
-    const rarity = card.rarity || 'Common';
+    const rarity = ident.rarity || 'Common';
     const rarityText = rarityMapping[rarity]?.[language] || rarity;
     const stars = '★'.repeat(
       rarity.includes('Secret') ? 5 :
@@ -364,16 +377,15 @@ export default function Pokedex() {
       rarity.includes('Uncommon') ? 2 : 1
     );
     
-    const description = card.description || 
-                       card.flavorText || 
-                       card.text?.join(' ') || 
+    const description = ident.description || 
+                       ident.flavorText || 
                        (language === 'he' ? 'אין תיאור זמין' : 'No description available');
     
     const value = Math.floor(Math.random() * 500) + 50;
     
-    const image = card.image || 
-                  card.images?.large || 
-                  card.images?.small ||
+    const image = ident.image || 
+                  ident.images?.large || 
+                  ident.images?.small ||
                   null;
     
     return {
@@ -389,12 +401,12 @@ export default function Pokedex() {
       description,
       value,
       image,
-      prices: card.prices || card.price || {},
-      set: card.set?.name || data.setName || 'Unknown Set',
-      setTotal: card.set?.cardCount?.total || data.setTotal || 0,
-      illustrator: card.illustrator || null,
-      attacks: card.attacks || [],
-      id: card.id || `${number}-${Date.now()}`
+      prices: ident.prices || {},
+      set: ident.set || 'Unknown Set',
+      setTotal: ident.set_total || 0,
+      illustrator: ident.illustrator || null,
+      attacks: ident.attacks || [],
+      id: ident.id || `${number}-${Date.now()}`
     };
   };
 
