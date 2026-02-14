@@ -2015,6 +2015,58 @@ html, body {
   font-weight: 600;
 }
 
+/* Card Modal Header */
+.cardModalHeader {
+  position: absolute;
+  top: -50px;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.8);
+  padding: 12px 20px;
+  border-radius: 10px 10px 0 0;
+  color: white;
+}
+
+.cardModalSetName {
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+.cardModalCardNumber {
+  font-size: 0.9rem;
+  opacity: 0.9;
+}
+
+/* Card Modal Footer */
+.cardModalFooter {
+  position: absolute;
+  bottom: -60px;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.8);
+  padding: 15px 20px;
+  border-radius: 0 0 10px 10px;
+  color: white;
+}
+
+.cardModalPrice {
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.cardModalPriceNis {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #fbbf24;
+}
+
 /* Hide arrows on mobile */
 @media (max-width: 768px) {
   .navArrow {

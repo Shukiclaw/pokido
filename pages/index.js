@@ -577,22 +577,7 @@ export default function Pokedex() {
           </div>
         )}
         
-        {selectedCard && (
-          <div className={styles.selectedCardInfo}>
-            <span className={styles.selectedName}>{selectedCard.name}</span>
-            <span className={styles.selectedDate}>
-              {new Date(selectedCard.scannedAt).toLocaleDateString()}
-            </span>
-            {selectedCard.image && (
-              <button 
-                className={styles.zoomBtn}
-                onClick={() => setShowCardModal(true)}
-              >
-                🔍 {t('zoom')}
-              </button>
-            )}
-          </div>
-        )}
+        {/* REMOVED: selectedCardInfo section with name, date, zoom button */}
       </div>
     );
   };
@@ -926,6 +911,16 @@ export default function Pokedex() {
               ✕
             </button>
             
+            {/* Card Info Header */}
+            {view === 'set-view' && currentSetId && (
+              <div className={styles.cardModalHeader}>
+                <span className={styles.cardModalSetName}>{sets[currentSetId]?.name}</span>
+                <span className={styles.cardModalCardNumber}>
+                  #{getSetCards(currentSetId)[selectedCardIndex]?.number} / {sets[currentSetId]?.total}
+                </span>
+              </div>
+            )}
+            
             {view === 'set-view' && currentSetId && getSetCards(currentSetId).length > 1 && (
               <>
                 <button 
@@ -969,6 +964,34 @@ export default function Pokedex() {
               } 
               alt="Card" 
             />
+            
+            {/* Card Price Footer */}
+            {view === 'set-view' && currentSetId && (
+              <div className={styles.cardModalFooter}>
+                {(() => {
+                  const card = getSetCards(currentSetId)[selectedCardIndex];
+                  if (!card) return null;
+                  
+                  const cmPrice = card.prices?.cardmarket?.trend;
+                  const nisValue = card.value;
+                  
+                  return (
+                    <>
+                      {cmPrice && (
+                        <span className={styles.cardModalPrice}>
+                          Cardmarket: €{cmPrice}
+                        </span>
+                      )}
+                      {nisValue > 0 && (
+                        <span className={styles.cardModalPriceNis}>
+                          ≈ ₪{nisValue.toFixed(2)}
+                        </span>
+                      )}
+                    </>
+                  );
+                })()}
+              </div>
+            )}
             
             {view === 'set-view' && currentSetId && (
               <div className={styles.carouselIndicator}>

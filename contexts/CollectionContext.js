@@ -86,6 +86,10 @@ export function CollectionProvider({ children }) {
           rarity: cardData.rarity,
           types: cardData.types,
           hp: cardData.hp,
+          set: cardData.set,
+          setTotal: cardData.setTotal,
+          value: cardData.value,
+          prices: cardData.prices,
           scannedAt: new Date().toISOString(),
           scanCount: 1
         }]
