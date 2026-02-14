@@ -122,6 +122,7 @@ export default function Pokedex() {
   const fileInputRef = useRef(null);
   const touchStartX = useRef(0);
   const touchEndX = useRef(0);
+  const [slideDirection, setSlideDirection] = useState(null);
   const setsWithStats = getSetsWithStats();
   const totalStats = getTotalStats();
 
@@ -881,7 +882,10 @@ export default function Pokedex() {
       {showCardModal && (
         <div 
           className={styles.cardModal} 
-          onClick={() => setShowCardModal(false)}
+          onClick={() => {
+            setShowCardModal(false);
+            setSlideDirection(null);
+          }}
           onTouchStart={(e) => {
             touchStartX.current = e.touches[0].clientX;
           }}
@@ -897,12 +901,16 @@ export default function Pokedex() {
             
             if (Math.abs(diff) > minSwipeDistance) {
               if (diff > 0 && selectedCardIndex < cards.length - 1) {
-                // Swipe left -> next card
+                // Swipe left -> next card (slide in from right)
+                setSlideDirection('right');
                 setSelectedCardIndex(prev => prev + 1);
               } else if (diff < 0 && selectedCardIndex > 0) {
-                // Swipe right -> previous card
+                // Swipe right -> previous card (slide in from left)
+                setSlideDirection('left');
                 setSelectedCardIndex(prev => prev - 1);
               }
+              // Clear animation after it plays
+              setTimeout(() => setSlideDirection(null), 300);
             }
           }}
         >
@@ -912,6 +920,7 @@ export default function Pokedex() {
               onClick={(e) => {
                 e.stopPropagation();
                 setShowCardModal(false);
+                setSlideDirection(null);
               }}
             >
               ✕
@@ -923,7 +932,11 @@ export default function Pokedex() {
                   className={`${styles.navArrow} ${styles.navLeft}`}
                   onClick={(e) => {
                     e.stopPropagation();
-                    if (selectedCardIndex > 0) setSelectedCardIndex(prev => prev - 1);
+                    if (selectedCardIndex > 0) {
+                      setSlideDirection('left');
+                      setSelectedCardIndex(prev => prev - 1);
+                      setTimeout(() => setSlideDirection(null), 300);
+                    }
                   }}
                   style={{ opacity: selectedCardIndex === 0 ? 0.3 : 1 }}
                 >
@@ -934,7 +947,11 @@ export default function Pokedex() {
                   onClick={(e) => {
                     e.stopPropagation();
                     const cards = getSetCards(currentSetId);
-                    if (selectedCardIndex < cards.length - 1) setSelectedCardIndex(prev => prev + 1);
+                    if (selectedCardIndex < cards.length - 1) {
+                      setSlideDirection('right');
+                      setSelectedCardIndex(prev => prev + 1);
+                      setTimeout(() => setSlideDirection(null), 300);
+                    }
                   }}
                   style={{ opacity: selectedCardIndex >= getSetCards(currentSetId).length - 1 ? 0.3 : 1 }}
                 >
@@ -944,6 +961,7 @@ export default function Pokedex() {
             )}
             
             <img 
+              className={slideDirection === 'right' ? styles.cardSlideRight : slideDirection === 'left' ? styles.cardSlideLeft : ''}
               src={
                 view === 'set-view' && currentSetId
                   ? getSetCards(currentSetId)[selectedCardIndex]?.image 

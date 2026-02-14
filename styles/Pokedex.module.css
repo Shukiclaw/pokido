@@ -2015,6 +2015,44 @@ html, body {
   font-weight: 600;
 }
 
+/* Hide arrows on mobile */
+@media (max-width: 768px) {
+  .navArrow {
+    display: none;
+  }
+}
+
+/* Slide animations for card transitions */
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideInLeft {
+  from {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.cardSlideRight {
+  animation: slideInRight 0.3s ease-out;
+}
+
+.cardSlideLeft {
+  animation: slideInLeft 0.3s ease-out;
+}
+
 /* Image Overlay */
 .imageOverlay {
   position: absolute;
