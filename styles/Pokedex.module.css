@@ -225,6 +225,8 @@ html, body {
   background: rgba(0,0,0,0.5);
   transform: translateY(-50%);
 }
+
+.container {
   --border-dark: #1D1D1D;
 }
 
