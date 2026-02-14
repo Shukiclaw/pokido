@@ -509,6 +509,7 @@ export default function Pokedex() {
   const renderSetView = () => {
     const cards = currentSetId ? getSetCards(currentSetId) : [];
     const setInfo = setsWithStats.find(s => s.id === currentSetId);
+    const selectedCard = cards[selectedCardIndex];
     
     return (
       <div className={styles.setViewScreen}>
@@ -533,7 +534,15 @@ export default function Pokedex() {
                 onClick={() => setSelectedCardIndex(index)}
               >
                 {card.image ? (
-                  <img src={card.image} alt={card.name} />
+                  <img 
+                    src={card.image} 
+                    alt={card.name} 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedCardIndex(index);
+                      setShowCardModal(true);
+                    }}
+                  />
                 ) : (
                   <div className={styles.cardPlaceholder}>?</div>
                 )}
@@ -543,12 +552,20 @@ export default function Pokedex() {
           </div>
         )}
         
-        {cards[selectedCardIndex] && (
+        {selectedCard && (
           <div className={styles.selectedCardInfo}>
-            <span className={styles.selectedName}>{cards[selectedCardIndex].name}</span>
+            <span className={styles.selectedName}>{selectedCard.name}</span>
             <span className={styles.selectedDate}>
-              {new Date(cards[selectedCardIndex].scannedAt).toLocaleDateString()}
+              {new Date(selectedCard.scannedAt).toLocaleDateString()}
             </span>
+            {selectedCard.image && (
+              <button 
+                className={styles.zoomBtn}
+                onClick={() => setShowCardModal(true)}
+              >
+                🔍 {t('zoom')}
+              </button>
+            )}
           </div>
         )}
       </div>
@@ -837,11 +854,10 @@ export default function Pokedex() {
       {/* Footer */}
       <footer className={styles.footer}>
         <p>Pokido © 2026</p>
-        <p>{t('poweredBy')}</p>
       </footer>
 
-      {/* Card Modal */}
-      {showCardModal && result?.image && (
+      {/* Card Modal - works for both result and album */}
+      {showCardModal && (
         <div className={styles.cardModal} onClick={() => setShowCardModal(false)}>
           <div className={styles.cardModalContent}>
             <button 
@@ -853,7 +869,14 @@ export default function Pokedex() {
             >
               ✕
             </button>
-            <img src={result.image} alt={result.name} />
+            <img 
+              src={
+                view === 'set-view' && currentSetId
+                  ? getSetCards(currentSetId)[selectedCardIndex]?.image 
+                  : result?.image
+              } 
+              alt="Card" 
+            />
           </div>
         </div>
       )}
