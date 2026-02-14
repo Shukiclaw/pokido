@@ -90,7 +90,7 @@ function PokedexControls({ onUp, onDown, onLeft, onRight, onMenu, onA, onB, view
       </button>
       
       {/* A/B Buttons */}
-      <div className={styles.actionButtons}>
+      <div className={styles.pokedexActionButtons}>
         <button className={`${styles.actionBtn} ${styles.btnA}`} onClick={onA}>A</button>
         <button className={`${styles.actionBtn} ${styles.btnB}`} onClick={onB}>B</button>
       </div>
