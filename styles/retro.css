@@ -1,0 +1,641 @@
+/* =====================================================
+   POKIDO RETRO STYLES - Game Boy / Pokemon Style
+   For content INSIDE the green screen only
+   ===================================================== */
+
+/* Retro Font Import fallback */
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+/* =====================================================
+   RETRO GAME BOY COLOR PALETTE
+   ===================================================== */
+:root {
+  --gb-darkest: #0f380f;
+  --gb-dark: #306230;
+  --gb-light: #8bac0f;
+  --gb-lightest: #9bbc0f;
+  --gb-screen-bg: #9bbc0f;
+  
+  /* Pokemon Retro Colors */
+  --pokemon-red: #DC0A2D;
+  --pokemon-blue: #3B4CCA;
+  --pokemon-yellow: #FFDE00;
+}
+
+/* =====================================================
+   RETRO TEXT STYLES (Inside Screen Only)
+   ===================================================== */
+.retro-text {
+  font-family: 'Press Start 2P', 'Courier New', monospace;
+  font-size: 0.65rem;
+  line-height: 1.6;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.retro-title {
+  font-family: 'Press Start 2P', 'Courier New', monospace;
+  font-size: 0.75rem;
+  line-height: 1.4;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--gb-darkest);
+  text-shadow: 1px 1px 0 var(--gb-light);
+}
+
+.retro-small {
+  font-family: 'Press Start 2P', 'Courier New', monospace;
+  font-size: 0.5rem;
+  line-height: 1.5;
+  letter-spacing: 0.5px;
+}
+
+/* =====================================================
+   RETRO BUTTONS - Game Boy Style (Inside Screen)
+   ===================================================== */
+.retro-btn {
+  font-family: 'Press Start 2P', 'Courier New', monospace;
+  font-size: 0.55rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 12px 16px;
+  border: 3px solid var(--gb-darkest);
+  border-radius: 4px;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.1s ease;
+  box-shadow: 
+    4px 4px 0 var(--gb-darkest),
+    inset -2px -2px 0 rgba(0,0,0,0.2),
+    inset 2px 2px 0 rgba(255,255,255,0.3);
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.retro-btn:active {
+  transform: translate(2px, 2px);
+  box-shadow: 
+    2px 2px 0 var(--gb-darkest),
+    inset -2px -2px 0 rgba(0,0,0,0.2),
+    inset 2px 2px 0 rgba(255,255,255,0.3);
+}
+
+/* Primary Retro Button */
+.retro-btn-primary {
+  background: linear-gradient(180deg, #ff6b6b 0%, #ee5a5a 100%);
+  color: white;
+  border-color: #8b0000;
+  box-shadow: 
+    4px 4px 0 #8b0000,
+    inset -2px -2px 0 rgba(0,0,0,0.2),
+    inset 2px 2px 0 rgba(255,255,255,0.4);
+}
+
+.retro-btn-primary:active {
+  box-shadow: 
+    2px 2px 0 #8b0000,
+    inset -2px -2px 0 rgba(0,0,0,0.2),
+    inset 2px 2px 0 rgba(255,255,255,0.4);
+}
+
+/* Secondary Retro Button */
+.retro-btn-secondary {
+  background: linear-gradient(180deg, #4ecdc4 0%, #3dbbb3 100%);
+  color: white;
+  border-color: #1a5f5a;
+  box-shadow: 
+    4px 4px 0 #1a5f5a,
+    inset -2px -2px 0 rgba(0,0,0,0.2),
+    inset 2px 2px 0 rgba(255,255,255,0.4);
+}
+
+.retro-btn-secondary:active {
+  box-shadow: 
+    2px 2px 0 #1a5f5a,
+    inset -2px -2px 0 rgba(0,0,0,0.2),
+    inset 2px 2px 0 rgba(255,255,255,0.4);
+}
+
+/* Yellow Retro Button */
+.retro-btn-yellow {
+  background: linear-gradient(180deg, #ffd93d 0%, #f5c800 100%);
+  color: var(--gb-darkest);
+  border-color: #b8860b;
+  box-shadow: 
+    4px 4px 0 #b8860b,
+    inset -2px -2px 0 rgba(0,0,0,0.2),
+    inset 2px 2px 0 rgba(255,255,255,0.6);
+}
+
+.retro-btn-yellow:active {
+  box-shadow: 
+    2px 2px 0 #b8860b,
+    inset -2px -2px 0 rgba(0,0,0,0.2),
+    inset 2px 2px 0 rgba(255,255,255,0.6);
+}
+
+/* Green Retro Button */
+.retro-btn-green {
+  background: linear-gradient(180deg, #7cb342 0%, #6a9e36 100%);
+  color: white;
+  border-color: #33691e;
+  box-shadow: 
+    4px 4px 0 #33691e,
+    inset -2px -2px 0 rgba(0,0,0,0.2),
+    inset 2px 2px 0 rgba(255,255,255,0.4);
+}
+
+.retro-btn-green:active {
+  box-shadow: 
+    2px 2px 0 #33691e,
+    inset -2px -2px 0 rgba(0,0,0,0.2),
+    inset 2px 2px 0 rgba(255,255,255,0.4);
+}
+
+/* =====================================================
+   RETRO CARDS / BOXES (Inside Screen)
+   ===================================================== */
+.retro-box {
+  background: var(--gb-lightest);
+  border: 3px solid var(--gb-darkest);
+  border-radius: 4px;
+  padding: 12px;
+  box-shadow: 
+    4px 4px 0 var(--gb-darkest),
+    inset -2px -2px 0 rgba(0,0,0,0.1),
+    inset 2px 2px 0 rgba(255,255,255,0.4);
+}
+
+.retro-box-dark {
+  background: var(--gb-dark);
+  border: 3px solid var(--gb-darkest);
+  border-radius: 4px;
+  padding: 12px;
+  color: var(--gb-lightest);
+  box-shadow: 
+    4px 4px 0 var(--gb-darkest),
+    inset -2px -2px 0 rgba(0,0,0,0.3),
+    inset 2px 2px 0 rgba(255,255,255,0.1);
+}
+
+/* =====================================================
+   RETRO INPUT FIELDS (Inside Screen)
+   ===================================================== */
+.retro-input {
+  font-family: 'Press Start 2P', 'Courier New', monospace;
+  font-size: 0.55rem;
+  padding: 12px;
+  border: 3px solid var(--gb-darkest);
+  border-radius: 4px;
+  background: var(--gb-lightest);
+  color: var(--gb-darkest);
+  outline: none;
+  transition: all 0.2s ease;
+  box-shadow: 
+    inset 3px 3px 0 rgba(0,0,0,0.1),
+    inset -2px -2px 0 rgba(255,255,255,0.3);
+}
+
+.retro-input:focus {
+  background: #c4d300;
+  box-shadow: 
+    0 0 0 2px var(--gb-darkest),
+    inset 3px 3px 0 rgba(0,0,0,0.1),
+    inset -2px -2px 0 rgba(255,255,255,0.3);
+}
+
+.retro-input::placeholder {
+  color: var(--gb-dark);
+  opacity: 0.7;
+}
+
+/* =====================================================
+   RETRO MENU / LIST ITEMS (Inside Screen)
+   ===================================================== */
+.retro-menu-item {
+  font-family: 'Press Start 2P', 'Courier New', monospace;
+  font-size: 0.55rem;
+  padding: 10px 12px;
+  border: 2px solid var(--gb-darkest);
+  border-radius: 4px;
+  margin-bottom: 8px;
+  background: var(--gb-lightest);
+  cursor: pointer;
+  transition: all 0.1s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 
+    2px 2px 0 var(--gb-darkest),
+    inset -1px -1px 0 rgba(0,0,0,0.1),
+    inset 1px 1px 0 rgba(255,255,255,0.3);
+}
+
+.retro-menu-item:hover {
+  background: #c4d300;
+  transform: translateX(2px);
+}
+
+.retro-menu-item:active {
+  transform: translate(2px, 2px);
+  box-shadow: 
+    0 0 0 var(--gb-darkest),
+    inset -1px -1px 0 rgba(0,0,0,0.1),
+    inset 1px 1px 0 rgba(255,255,255,0.3);
+}
+
+.retro-menu-item.selected {
+  background: var(--pokemon-red);
+  color: white;
+  border-color: #8b0000;
+}
+
+.retro-menu-item.selected::before {
+  content: '▶';
+  font-size: 0.5rem;
+}
+
+/* =====================================================
+   RETRO BADGES / TAGS (Inside Screen)
+   ===================================================== */
+.retro-badge {
+  font-family: 'Press Start 2P', 'Courier New', monospace;
+  font-size: 0.45rem;
+  padding: 4px 8px;
+  border: 2px solid var(--gb-darkest);
+  border-radius: 3px;
+  background: var(--gb-lightest);
+  display: inline-block;
+  box-shadow: 
+    2px 2px 0 var(--gb-darkest);
+}
+
+.retro-badge-red {
+  background: #ff6b6b;
+  color: white;
+  border-color: #8b0000;
+}
+
+.retro-badge-blue {
+  background: #4ecdc4;
+  color: white;
+  border-color: #1a5f5a;
+}
+
+.retro-badge-yellow {
+  background: #ffd93d;
+  color: var(--gb-darkest);
+  border-color: #b8860b;
+}
+
+/* =====================================================
+   RETRO PROGRESS BAR (Inside Screen)
+   ===================================================== */
+.retro-progress {
+  height: 16px;
+  background: var(--gb-dark);
+  border: 2px solid var(--gb-darkest);
+  border-radius: 3px;
+  overflow: hidden;
+  box-shadow: inset 2px 2px 0 rgba(0,0,0,0.3);
+}
+
+.retro-progress-fill {
+  height: 100%;
+  background: linear-gradient(180deg, #7cb342 0%, #558b2f 50%, #33691e 100%);
+  border-right: 2px solid var(--gb-darkest);
+  transition: width 0.3s ease;
+  position: relative;
+}
+
+.retro-progress-fill::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: rgba(255,255,255,0.4);
+}
+
+/* =====================================================
+   RETRO DIVIDERS (Inside Screen)
+   ===================================================== */
+.retro-divider {
+  height: 4px;
+  background: repeating-linear-gradient(
+    90deg,
+    var(--gb-darkest) 0px,
+    var(--gb-darkest) 4px,
+    transparent 4px,
+    transparent 8px
+  );
+  margin: 12px 0;
+}
+
+.retro-divider-thick {
+  height: 6px;
+  background: var(--gb-darkest);
+  border: none;
+  margin: 12px 0;
+  border-radius: 2px;
+}
+
+/* =====================================================
+   RETRO GRID (Inside Screen)
+   ===================================================== */
+.retro-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+  gap: 8px;
+}
+
+.retro-grid-item {
+  aspect-ratio: 1;
+  background: var(--gb-lightest);
+  border: 2px solid var(--gb-darkest);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.1s ease;
+  box-shadow: 
+    2px 2px 0 var(--gb-darkest),
+    inset -1px -1px 0 rgba(0,0,0,0.1),
+    inset 1px 1px 0 rgba(255,255,255,0.3);
+}
+
+.retro-grid-item:hover {
+  background: #c4d300;
+  transform: translateY(-2px);
+}
+
+.retro-grid-item:active {
+  transform: translate(1px, 1px);
+  box-shadow: 
+    1px 1px 0 var(--gb-darkest),
+    inset -1px -1px 0 rgba(0,0,0,0.1),
+    inset 1px 1px 0 rgba(255,255,255,0.3);
+}
+
+.retro-grid-item.selected {
+  background: var(--pokemon-red);
+  border-color: #8b0000;
+}
+
+/* =====================================================
+   RETRO STATS BOX (Inside Screen)
+   ===================================================== */
+.retro-stats-box {
+  background: var(--gb-lightest);
+  border: 3px solid var(--gb-darkest);
+  border-radius: 4px;
+  padding: 12px;
+  text-align: center;
+  box-shadow: 
+    3px 3px 0 var(--gb-darkest),
+    inset -2px -2px 0 rgba(0,0,0,0.1),
+    inset 2px 2px 0 rgba(255,255,255,0.4);
+}
+
+.retro-stats-number {
+  font-family: 'Press Start 2P', 'Courier New', monospace;
+  font-size: 1rem;
+  color: var(--pokemon-red);
+  text-shadow: 1px 1px 0 var(--gb-darkest);
+  margin-bottom: 4px;
+}
+
+.retro-stats-label {
+  font-family: 'Press Start 2P', 'Courier New', monospace;
+  font-size: 0.4rem;
+  color: var(--gb-darkest);
+  text-transform: uppercase;
+}
+
+/* =====================================================
+   RETRO TYPE BADGES (Pokemon Types Inside Screen)
+   ===================================================== */
+.retro-type-badge {
+  font-family: 'Press Start 2P', 'Courier New', monospace;
+  font-size: 0.45rem;
+  padding: 4px 10px;
+  border: 2px solid var(--gb-darkest);
+  border-radius: 20px;
+  display: inline-block;
+  text-transform: uppercase;
+  box-shadow: 2px 2px 0 var(--gb-darkest);
+}
+
+.retro-type-water { background: #6890F0; color: white; }
+.retro-type-fire { background: #F08030; color: white; }
+.retro-type-grass { background: #78C850; color: white; }
+.retro-type-electric { background: #F8D030; color: var(--gb-darkest); }
+.retro-type-psychic { background: #F85888; color: white; }
+.retro-type-fighting { background: #C03028; color: white; }
+.retro-type-darkness { background: #705848; color: white; }
+.retro-type-metal { background: #B8B8D0; color: var(--gb-darkest); }
+.retro-type-fairy { background: #EE99AC; color: var(--gb-darkest); }
+.retro-type-dragon { background: #7038F8; color: white; }
+.retro-type-colorless { background: #A8A878; color: white; }
+
+/* =====================================================
+   RETRO VALUE CARD (Inside Screen)
+   ===================================================== */
+.retro-value-card {
+  background: linear-gradient(180deg, #ffd700 0%, #ffb700 100%);
+  border: 3px solid #8b4513;
+  border-radius: 4px;
+  padding: 16px;
+  text-align: center;
+  box-shadow: 
+    4px 4px 0 #8b4513,
+    inset -2px -2px 0 rgba(255,255,255,0.4),
+    inset 2px 2px 0 rgba(0,0,0,0.1);
+}
+
+.retro-value-title {
+  font-family: 'Press Start 2P', 'Courier New', monospace;
+  font-size: 0.5rem;
+  color: #8b4513;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+}
+
+.retro-value-amount {
+  font-family: 'Press Start 2P', 'Courier New', monospace;
+  font-size: 1.2rem;
+  color: #8b4513;
+  text-shadow: 1px 1px 0 rgba(255,255,255,0.5);
+}
+
+/* =====================================================
+   RETRO SCANNER ANIMATION
+   ===================================================== */
+@keyframes retroScanline {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(400px); }
+}
+
+.retro-scanning::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(15, 56, 15, 0.1) 2px,
+    rgba(15, 56, 15, 0.1) 4px
+  );
+  pointer-events: none;
+  z-index: 5;
+}
+
+/* =====================================================
+   RETRO SCROLLBAR (Inside Screen)
+   ===================================================== */
+.retro-scroll::-webkit-scrollbar {
+  width: 12px;
+}
+
+.retro-scroll::-webkit-scrollbar-track {
+  background: var(--gb-dark);
+  border: 2px solid var(--gb-darkest);
+  border-radius: 4px;
+}
+
+.retro-scroll::-webkit-scrollbar-thumb {
+  background: var(--gb-lightest);
+  border: 2px solid var(--gb-darkest);
+  border-radius: 4px;
+  box-shadow: inset -2px -2px 0 rgba(0,0,0,0.2),
+              inset 2px 2px 0 rgba(255,255,255,0.3);
+}
+
+.retro-scroll::-webkit-scrollbar-thumb:hover {
+  background: #c4d300;
+}
+
+/* =====================================================
+   RETRO ARROW NAVIGATION
+   ===================================================== */
+.retro-arrow {
+  width: 32px;
+  height: 32px;
+  background: var(--gb-lightest);
+  border: 2px solid var(--gb-darkest);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 0.7rem;
+  box-shadow: 
+    2px 2px 0 var(--gb-darkest),
+    inset -1px -1px 0 rgba(0,0,0,0.1),
+    inset 1px 1px 0 rgba(255,255,255,0.3);
+  transition: all 0.1s ease;
+}
+
+.retro-arrow:hover {
+  background: #c4d300;
+}
+
+.retro-arrow:active {
+  transform: translate(2px, 2px);
+  box-shadow: 
+    0 0 0 var(--gb-darkest),
+    inset -1px -1px 0 rgba(0,0,0,0.1),
+    inset 1px 1px 0 rgba(255,255,255,0.3);
+}
+
+/* =====================================================
+   RETRO LOADING SPINNER
+   ===================================================== */
+.retro-spinner {
+  width: 32px;
+  height: 32px;
+  border: 4px solid var(--gb-dark);
+  border-top: 4px solid var(--gb-darkest);
+  border-radius: 4px;
+  animation: retroSpin 1s linear infinite;
+}
+
+@keyframes retroSpin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* =====================================================
+   RETRO POKEBALL ICON
+   ===================================================== */
+.retro-pokeball {
+  width: 24px;
+  height: 24px;
+  background: linear-gradient(to bottom, white 50%, #ff6b6b 50%);
+  border: 2px solid var(--gb-darkest);
+  border-radius: 50%;
+  position: relative;
+}
+
+.retro-pokeball::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 8px;
+  height: 8px;
+  background: white;
+  border: 2px solid var(--gb-darkest);
+  border-radius: 50%;
+}
+
+/* =====================================================
+   HEBREW TEXT SUPPORT
+   ===================================================== */
+.retro-hebrew {
+  font-family: 'Heebo', 'Press Start 2P', sans-serif;
+  font-weight: 700;
+  font-size: 0.75rem;
+}
+
+/* RTL adjustments */
+[dir="rtl"] .retro-menu-item:hover {
+  transform: translateX(-2px);
+}
+
+[dir="rtl"] .retro-btn:active,
+[dir="rtl"] .retro-menu-item:active {
+  transform: translate(-2px, 2px);
+}
+
+/* =====================================================
+   RESPONSIVE ADJUSTMENTS
+   ===================================================== */
+@media (max-width: 400px) {
+  .retro-btn {
+    font-size: 0.5rem;
+    padding: 10px 12px;
+  }
+  
+  .retro-title {
+    font-size: 0.65rem;
+  }
+  
+  .retro-text {
+    font-size: 0.55rem;
+  }
+  
+  .retro-stats-number {
+    font-size: 0.8rem;
+  }
+}

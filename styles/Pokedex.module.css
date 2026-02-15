@@ -558,22 +558,29 @@ html, body {
 }
 
 .openBtn {
-  background: var(--pokedex-red);
+  font-family: 'Press Start 2P', 'Courier New', monospace;
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  background: linear-gradient(180deg, #ff6b6b 0%, #ee5a5a 100%);
   color: white;
-  border: none;
-  padding: 12px 30px;
-  border-radius: 25px;
-  font-family: inherit;
-  font-size: 1rem;
-  font-weight: 700;
+  border: 3px solid #8b0000;
+  padding: 14px 28px;
+  border-radius: 4px;
   cursor: pointer;
-  box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-  transition: all 0.3s;
+  box-shadow: 
+    4px 4px 0 #8b0000,
+    inset -2px -2px 0 rgba(0,0,0,0.2),
+    inset 2px 2px 0 rgba(255,255,255,0.4);
+  transition: all 0.1s ease;
 }
 
-.openBtn:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+.openBtn:active {
+  transform: translate(2px, 2px);
+  box-shadow: 
+    2px 2px 0 #8b0000,
+    inset -2px -2px 0 rgba(0,0,0,0.2),
+    inset 2px 2px 0 rgba(255,255,255,0.4);
 }
 
 /* Upload Screen */
@@ -660,29 +667,40 @@ html, body {
 }
 
 .scanBtn, .backBtn {
-  padding: 12px 25px;
-  border-radius: 20px;
-  border: none;
-  font-family: inherit;
-  font-size: 1rem;
-  font-weight: 700;
+  font-family: 'Press Start 2P', 'Courier New', monospace;
+  font-size: 0.55rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 12px 20px;
+  border-radius: 4px;
+  border: 3px solid;
   cursor: pointer;
-  transition: all 0.3s;
+  transition: all 0.1s ease;
+  box-shadow: 4px 4px 0;
 }
 
 .scanBtn {
-  background: var(--pokedex-red);
+  background: linear-gradient(180deg, #ff6b6b 0%, #ee5a5a 100%);
   color: white;
-  box-shadow: 0 5px 15px rgba(220, 10, 45, 0.4);
+  border-color: #8b0000;
+  box-shadow: 4px 4px 0 #8b0000, inset -2px -2px 0 rgba(0,0,0,0.2), inset 2px 2px 0 rgba(255,255,255,0.4);
+}
+
+.scanBtn:active {
+  transform: translate(2px, 2px);
+  box-shadow: 2px 2px 0 #8b0000, inset -2px -2px 0 rgba(0,0,0,0.2), inset 2px 2px 0 rgba(255,255,255,0.4);
 }
 
 .backBtn {
-  background: #888;
+  background: linear-gradient(180deg, #6c757d 0%, #5a6268 100%);
   color: white;
+  border-color: #343a40;
+  box-shadow: 4px 4px 0 #343a40, inset -2px -2px 0 rgba(0,0,0,0.2), inset 2px 2px 0 rgba(255,255,255,0.3);
 }
 
-.scanBtn:hover, .backBtn:hover {
-  transform: translateY(-2px);
+.backBtn:active {
+  transform: translate(2px, 2px);
+  box-shadow: 2px 2px 0 #343a40, inset -2px -2px 0 rgba(0,0,0,0.2), inset 2px 2px 0 rgba(255,255,255,0.3);
 }
 
 /* Loading Screen */
@@ -1594,15 +1612,20 @@ html, body {
 }
 
 .menuOption {
-  padding: 18px 25px;
-  background: linear-gradient(145deg, #3b82f6, #2563eb);
-  border: none;
-  border-radius: 15px;
+  font-family: 'Press Start 2P', 'Courier New', monospace;
+  font-size: 0.6rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 16px 24px;
+  background: linear-gradient(180deg, #3b82f6 0%, #2563eb 100%);
+  border: 3px solid #1e3a8a;
+  border-radius: 4px;
   color: white;
-  font-size: 1.1rem;
-  font-weight: 600;
   cursor: pointer;
-  box-shadow: 0 6px 0 #1e40af;
+  box-shadow: 
+    4px 4px 0 #1e3a8a,
+    inset -2px -2px 0 rgba(0,0,0,0.2),
+    inset 2px 2px 0 rgba(255,255,255,0.4);
   transition: all 0.1s ease;
   display: flex;
   align-items: center;
@@ -1610,13 +1633,20 @@ html, body {
 }
 
 .menuOption:hover {
+  background: linear-gradient(180deg, #4f8ef7 0%, #3b82f6 100%);
   transform: translateY(-2px);
-  box-shadow: 0 8px 0 #1e40af;
+  box-shadow: 
+    4px 6px 0 #1e3a8a,
+    inset -2px -2px 0 rgba(0,0,0,0.2),
+    inset 2px 2px 0 rgba(255,255,255,0.4);
 }
 
 .menuOption:active {
-  transform: translateY(4px);
-  box-shadow: 0 0 0 #1e40af;
+  transform: translate(2px, 4px);
+  box-shadow: 
+    2px 2px 0 #1e3a8a,
+    inset -2px -2px 0 rgba(0,0,0,0.2),
+    inset 2px 2px 0 rgba(255,255,255,0.4);
 }
 
 /* === ALBUM SCREEN === */
@@ -1722,17 +1752,33 @@ html, body {
 }
 
 .backBtn {
-  padding: 8px 15px;
-  background: #e5e7eb;
-  border: none;
-  border-radius: 20px;
-  font-size: 0.85rem;
+  font-family: 'Press Start 2P', 'Courier New', monospace;
+  font-size: 0.55rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 8px 14px;
+  background: linear-gradient(180deg, #e5e7eb 0%, #d1d5db 100%);
+  border: 3px solid #6b7280;
+  border-radius: 4px;
+  color: #1f2937;
   cursor: pointer;
-  transition: all 0.2s ease;
+  box-shadow: 
+    3px 3px 0 #6b7280,
+    inset -1px -1px 0 rgba(0,0,0,0.1),
+    inset 1px 1px 0 rgba(255,255,255,0.5);
+  transition: all 0.1s ease;
 }
 
 .backBtn:hover {
-  background: #d1d5db;
+  background: linear-gradient(180deg, #f3f4f6 0%, #e5e7eb 100%);
+}
+
+.backBtn:active {
+  transform: translate(2px, 2px);
+  box-shadow: 
+    1px 1px 0 #6b7280,
+    inset -1px -1px 0 rgba(0,0,0,0.1),
+    inset 1px 1px 0 rgba(255,255,255,0.5);
 }
 
 .setTitle {
@@ -1826,19 +1872,34 @@ html, body {
 }
 
 .zoomBtn {
+  font-family: 'Press Start 2P', 'Courier New', monospace;
+  font-size: 0.45rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
   padding: 6px 12px;
-  background: #3b82f6;
+  background: linear-gradient(180deg, #3b82f6 0%, #2563eb 100%);
   color: white;
-  border: none;
-  border-radius: 15px;
-  font-size: 0.8rem;
+  border: 2px solid #1e40af;
+  border-radius: 4px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  box-shadow: 
+    2px 2px 0 #1e40af,
+    inset -1px -1px 0 rgba(0,0,0,0.2),
+    inset 1px 1px 0 rgba(255,255,255,0.4);
+  transition: all 0.1s ease;
 }
 
 .zoomBtn:hover {
-  background: #2563eb;
+  background: linear-gradient(180deg, #4f8ef7 0%, #3b82f6 100%);
   transform: scale(1.05);
+}
+
+.zoomBtn:active {
+  transform: translate(1px, 1px) scale(1.05);
+  box-shadow: 
+    1px 1px 0 #1e40af,
+    inset -1px -1px 0 rgba(0,0,0,0.2),
+    inset 1px 1px 0 rgba(255,255,255,0.4);
 }
 
 .selectedName {
