@@ -133,31 +133,97 @@ export default function Pokedex() {
   // Navigation handlers
   const handleUp = () => {
     if (view === 'album') {
-      setSelectedSetIndex(prev => Math.max(0, prev - 1));
+      setSelectedSetIndex(prev => {
+        const newIndex = Math.max(0, prev - 1);
+        // Scroll to keep selected item in view
+        const albumScreen = document.querySelector('[class*="albumScreen"]');
+        if (albumScreen) {
+          const setRows = albumScreen.querySelectorAll('[class*="setRow"]');
+          if (setRows[newIndex]) {
+            setRows[newIndex].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+          }
+        }
+        return newIndex;
+      });
     } else if (view === 'set-view' && currentSetId) {
-      setSelectedCardIndex(prev => Math.max(0, prev - 4)); // Move up one row (4 cards per row)
+      setSelectedCardIndex(prev => {
+        const newIndex = Math.max(0, prev - 4); // Move up one row (4 cards per row)
+        // Scroll to keep selected card in view
+        const setViewScreen = document.querySelector('[class*="setViewScreen"]');
+        if (setViewScreen) {
+          const cardThumbs = setViewScreen.querySelectorAll('[class*="cardThumb"]');
+          if (cardThumbs[newIndex]) {
+            cardThumbs[newIndex].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+          }
+        }
+        return newIndex;
+      });
     }
   };
 
   const handleDown = () => {
     if (view === 'album') {
-      setSelectedSetIndex(prev => Math.min(setsWithStats.length - 1, prev + 1));
+      setSelectedSetIndex(prev => {
+        const newIndex = Math.min(setsWithStats.length - 1, prev + 1);
+        // Scroll to keep selected item in view
+        const albumScreen = document.querySelector('[class*="albumScreen"]');
+        if (albumScreen) {
+          const setRows = albumScreen.querySelectorAll('[class*="setRow"]');
+          if (setRows[newIndex]) {
+            setRows[newIndex].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+          }
+        }
+        return newIndex;
+      });
     } else if (view === 'set-view' && currentSetId) {
       const cards = getSetCards(currentSetId);
-      setSelectedCardIndex(prev => Math.min(cards.length - 1, prev + 4));
+      setSelectedCardIndex(prev => {
+        const newIndex = Math.min(cards.length - 1, prev + 4);
+        // Scroll to keep selected card in view
+        const setViewScreen = document.querySelector('[class*="setViewScreen"]');
+        if (setViewScreen) {
+          const cardThumbs = setViewScreen.querySelectorAll('[class*="cardThumb"]');
+          if (cardThumbs[newIndex]) {
+            cardThumbs[newIndex].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+          }
+        }
+        return newIndex;
+      });
     }
   };
 
   const handleLeft = () => {
     if (view === 'set-view' && currentSetId) {
-      setSelectedCardIndex(prev => Math.max(0, prev - 1));
+      setSelectedCardIndex(prev => {
+        const newIndex = Math.max(0, prev - 1);
+        // Scroll to keep selected card in view
+        const setViewScreen = document.querySelector('[class*="setViewScreen"]');
+        if (setViewScreen) {
+          const cardThumbs = setViewScreen.querySelectorAll('[class*="cardThumb"]');
+          if (cardThumbs[newIndex]) {
+            cardThumbs[newIndex].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+          }
+        }
+        return newIndex;
+      });
     }
   };
 
   const handleRight = () => {
     if (view === 'set-view' && currentSetId) {
       const cards = getSetCards(currentSetId);
-      setSelectedCardIndex(prev => Math.min(cards.length - 1, prev + 1));
+      setSelectedCardIndex(prev => {
+        const newIndex = Math.min(cards.length - 1, prev + 1);
+        // Scroll to keep selected card in view
+        const setViewScreen = document.querySelector('[class*="setViewScreen"]');
+        if (setViewScreen) {
+          const cardThumbs = setViewScreen.querySelectorAll('[class*="cardThumb"]');
+          if (cardThumbs[newIndex]) {
+            cardThumbs[newIndex].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+          }
+        }
+        return newIndex;
+      });
     }
   };
 
