@@ -1753,8 +1753,30 @@ html, body {
 .albumScreen {
   padding: 15px;
   height: 100%;
+  max-height: 400px;
+  overflow-y: auto;
   display: flex;
   flex-direction: column;
+}
+
+.albumScreen::-webkit-scrollbar {
+  width: 8px;
+}
+
+.albumScreen::-webkit-scrollbar-track {
+  background: #306230;
+  border: 2px solid #0f380f;
+  border-radius: 4px;
+}
+
+.albumScreen::-webkit-scrollbar-thumb {
+  background: #9bbc0f;
+  border: 2px solid #0f380f;
+  border-radius: 4px;
+}
+
+.albumScreen::-webkit-scrollbar-thumb:hover {
+  background: #c4d300;
 }
 
 .albumTitle {
@@ -1878,8 +1900,30 @@ html, body {
 .setViewScreen {
   padding: 15px;
   height: 100%;
+  max-height: 400px;
+  overflow-y: auto;
   display: flex;
   flex-direction: column;
+}
+
+.setViewScreen::-webkit-scrollbar {
+  width: 8px;
+}
+
+.setViewScreen::-webkit-scrollbar-track {
+  background: #306230;
+  border: 2px solid #0f380f;
+  border-radius: 4px;
+}
+
+.setViewScreen::-webkit-scrollbar-thumb {
+  background: #9bbc0f;
+  border: 2px solid #0f380f;
+  border-radius: 4px;
+}
+
+.setViewScreen::-webkit-scrollbar-thumb:hover {
+  background: #c4d300;
 }
 
 .setHeader {
