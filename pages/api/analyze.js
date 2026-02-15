@@ -285,7 +285,7 @@ If any field is not found, use null.`;
         }],
         generationConfig: {
           temperature: 0.1,
-          maxOutputTokens: 256
+          maxOutputTokens: GEMINI_MODEL.includes('3') ? 1024 : 256
         }
       })
     }
