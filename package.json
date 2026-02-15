@@ -8,6 +8,7 @@
     "start": "next start"
   },
   "dependencies": {
+    "@vercel/analytics": "^1.6.1",
     "formidable": "^3",
     "next": "latest",
     "node-fetch": "^3",

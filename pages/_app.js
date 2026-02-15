@@ -1,6 +1,7 @@
 import '../styles/globals.css';
 import '../styles/retro.css';
 import Head from 'next/head';
+import { Analytics } from '@vercel/analytics/react';
 import { LanguageProvider } from '../contexts/LanguageContext';
 import { CollectionProvider } from '../contexts/CollectionContext';
 
@@ -17,6 +18,7 @@ function MyApp({ Component, pageProps }) {
           <Component {...pageProps} />
         </CollectionProvider>
       </LanguageProvider>
+      <Analytics />
     </>
   );
 }
