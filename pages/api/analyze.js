@@ -13,6 +13,7 @@ const TCGDEX_API_JA = 'https://api.tcgdex.net/v2/ja';
 
 // משתני סביבה
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-2.0-flash';
 const POKEMON_TCG_API_KEY = process.env.POKEMON_TCG_API_KEY;
 
 // fallback לתמונה מ-Pokemon TCG API
@@ -264,7 +265,7 @@ For language detection:
 If any field is not found, use null.`;
 
   const response = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${GEMINI_API_KEY}`,
+    `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`,
     {
       method: 'POST',
       headers: {
@@ -303,6 +304,18 @@ If any field is not found, use null.`;
 
   const text = data.candidates[0].content.parts[0].text;
   console.log('📝 Raw Gemini response:', text);
+  
+  // Check if response is an error message in Hebrew or other non-JSON
+  if (text.includes('נסה שוב') || text.includes('לא זוהה') || text.includes('error') || text.includes('שגיאה')) {
+    console.log('⚠️ Gemini returned error message instead of JSON');
+    return {
+      pokemonName: null,
+      cardNumber: null,
+      setName: null,
+      language: 'english',
+      error: text.substring(0, 200)
+    };
+  }
   
   // Try to extract JSON more robustly
   let jsonMatch = text.match(/\{[\s\S]*\}/);
