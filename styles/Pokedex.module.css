@@ -544,17 +544,21 @@ html, body {
 }
 
 .welcomeTitle {
-  font-size: 2rem;
-  font-weight: 900;
-  color: var(--border-dark);
+  font-family: 'Press Start 2P', 'Courier New', monospace;
+  font-size: 0.75rem;
+  color: #0f380f;
   margin-bottom: 10px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
   text-shadow: 1px 1px 0 rgba(255,255,255,0.3);
 }
 
 .welcomeText {
-  font-size: 0.9rem;
-  color: #3D5500;
+  font-family: 'Press Start 2P', 'Courier New', monospace;
+  font-size: 0.5rem;
+  color: #306230;
   margin-bottom: 20px;
+  line-height: 1.6;
 }
 
 .openBtn {
@@ -628,15 +632,18 @@ html, body {
 }
 
 .uploadText {
-  font-size: 1.2rem;
-  font-weight: 700;
-  color: var(--border-dark);
+  font-family: 'Press Start 2P', 'Courier New', monospace;
+  font-size: 0.65rem;
+  color: #0f380f;
   margin-bottom: 5px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
 }
 
 .uploadSubtext {
-  font-size: 0.8rem;
-  color: #3D5500;
+  font-family: 'Press Start 2P', 'Courier New', monospace;
+  font-size: 0.4rem;
+  color: #306230;
 }
 
 /* Preview Screen */
@@ -761,15 +768,19 @@ html, body {
 }
 
 .loadingStatus {
-  font-size: 0.9rem;
-  color: #3D5500;
-  font-weight: 600;
+  font-family: 'Press Start 2P', 'Courier New', monospace;
+  font-size: 0.5rem;
+  color: #0f380f;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .errorMsg {
-  font-size: 0.8rem;
+  font-family: 'Press Start 2P', 'Courier New', monospace;
+  font-size: 0.4rem;
   color: #8B0000;
   margin-top: 10px;
+  text-transform: uppercase;
 }
 
 /* Result Screen */
@@ -853,9 +864,12 @@ html, body {
 }
 
 .pokemonName {
-  font-size: 1.5rem;
-  font-weight: 900;
-  color: var(--border-dark);
+  font-family: 'Press Start 2P', 'Courier New', monospace;
+  font-size: 0.9rem;
+  color: #0f380f;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  text-shadow: 1px 1px 0 rgba(255,255,255,0.3);
   margin: 5px 0;
 }
 
@@ -868,12 +882,14 @@ html, body {
 }
 
 .typeBadge {
-  padding: 4px 12px;
-  border-radius: 15px;
-  font-size: 0.75rem;
-  font-weight: 700;
+  font-family: 'Press Start 2P', 'Courier New', monospace;
+  font-size: 0.45rem;
+  padding: 4px 10px;
+  border: 2px solid #0f380f;
+  border-radius: 20px;
   color: #fff;
   text-shadow: 1px 1px 0 rgba(0,0,0,0.3);
+  box-shadow: 2px 2px 0 #0f380f;
 }
 
 .stats {
@@ -889,32 +905,39 @@ html, body {
 
 .statLabel {
   display: block;
-  font-size: 0.7rem;
-  color: #3D5500;
+  font-family: 'Press Start 2P', 'Courier New', monospace;
+  font-size: 0.4rem;
+  color: #306230;
   margin-bottom: 3px;
+  text-transform: uppercase;
 }
 
 .statValue {
-  font-size: 1.2rem;
-  font-weight: 700;
-  color: var(--border-dark);
+  font-family: 'Press Start 2P', 'Courier New', monospace;
+  font-size: 0.7rem;
+  color: #0f380f;
 }
 
 .description {
-  font-size: 0.8rem;
-  color: #3D5500;
+  font-family: 'Press Start 2P', 'Courier New', monospace;
+  font-size: 0.45rem;
+  color: #306230;
   margin: 10px 0;
-  line-height: 1.4;
+  line-height: 1.6;
 }
 
 /* Value Card */
 .valueCard {
-  background: linear-gradient(145deg, #FFD700 0%, #FFA500 100%);
-  border-radius: 10px;
+  background: linear-gradient(180deg, #ffd700 0%, #ffb700 100%);
+  border: 3px solid #8b4513;
+  border-radius: 4px;
   padding: 15px;
   text-align: center;
   margin-bottom: 15px;
-  box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+  box-shadow: 
+    4px 4px 0 #8b4513,
+    inset -2px -2px 0 rgba(255,255,255,0.4),
+    inset 2px 2px 0 rgba(0,0,0,0.1);
 }
 
 .rarityBadge {
@@ -923,14 +946,16 @@ html, body {
 
 .stars {
   display: block;
-  font-size: 1.2rem;
-  margin-bottom: 3px;
+  font-family: 'Press Start 2P', 'Courier New', monospace;
+  font-size: 0.8rem;
+  margin-bottom: 5px;
 }
 
 .rarityText {
-  font-size: 0.8rem;
-  font-weight: 700;
-  color: #8B4513;
+  font-family: 'Press Start 2P', 'Courier New', monospace;
+  font-size: 0.45rem;
+  color: #8b4513;
+  text-transform: uppercase;
 }
 
 .valueDisplay {
@@ -940,22 +965,26 @@ html, body {
 }
 
 .valueLabel {
-  font-size: 0.8rem;
-  color: #8B4513;
+  font-family: 'Press Start 2P', 'Courier New', monospace;
+  font-size: 0.45rem;
+  color: #8b4513;
   margin-bottom: 5px;
+  text-transform: uppercase;
 }
 
 .valueAmount {
-  font-size: 2rem;
-  font-weight: 900;
-  color: #8B4513;
+  font-family: 'Press Start 2P', 'Courier New', monospace;
+  font-size: 1.2rem;
+  color: #8b4513;
+  text-shadow: 1px 1px 0 rgba(255,255,255,0.5);
 }
 
 .priceDetails {
   margin-top: 10px;
   padding-top: 10px;
-  border-top: 1px dashed rgba(139, 69, 19, 0.3);
-  font-size: 0.75rem;
+  border-top: 2px dashed #8b4513;
+  font-family: 'Press Start 2P', 'Courier New', monospace;
+  font-size: 0.4rem;
   color: #5D3500;
 }
 
@@ -1086,47 +1115,56 @@ html, body {
 
 /* Details Section */
 .detailsSection {
-  background: rgba(0, 0, 0, 0.15);
-  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.1);
+  border: 2px solid #0f380f;
+  border-radius: 4px;
   padding: 12px;
   margin-top: 10px;
+  box-shadow: inset 2px 2px 0 rgba(0,0,0,0.1);
 }
 
 .detailsSection h4 {
-  font-size: 0.9rem;
-  color: #3D5500;
-  margin-bottom: 8px;
+  font-family: 'Press Start 2P', 'Courier New', monospace;
+  font-size: 0.5rem;
+  color: #0f380f;
+  margin-bottom: 10px;
   text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 1px;
 }
 
 .detailsSection h5 {
-  font-size: 0.8rem;
-  color: #3D5500;
-  margin: 8px 0 4px 0;
+  font-family: 'Press Start 2P', 'Courier New', monospace;
+  font-size: 0.45rem;
+  color: #0f380f;
+  margin: 10px 0 6px 0;
+  text-transform: uppercase;
 }
 
 .detailRow {
   display: flex;
   justify-content: space-between;
-  font-size: 0.75rem;
-  color: #2D4500;
-  margin: 4px 0;
-  padding: 2px 0;
-  border-bottom: 1px dotted rgba(0, 0, 0, 0.1);
+  font-family: 'Press Start 2P', 'Courier New', monospace;
+  font-size: 0.4rem;
+  color: #0f380f;
+  margin: 5px 0;
+  padding: 3px 0;
+  border-bottom: 1px dotted rgba(15, 56, 15, 0.3);
 }
 
 .attacksSection {
-  margin-top: 8px;
-  padding-top: 8px;
-  border-top: 1px solid rgba(0, 0, 0, 0.1);
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 2px solid #0f380f;
 }
 
 .attackRow {
   display: flex;
   justify-content: space-between;
-  font-size: 0.75rem;
-  color: #2D4500;
-  margin: 2px 0;
+  font-family: 'Press Start 2P', 'Courier New', monospace;
+  font-size: 0.4rem;
+  color: #0f380f;
+  margin: 4px 0;
 }
 
 .attackName {
@@ -1141,25 +1179,32 @@ html, body {
 /* Tips Section */
 .tipsSection {
   background: rgba(0,0,0,0.1);
-  border-radius: 10px;
+  border: 2px solid #0f380f;
+  border-radius: 4px;
   padding: 12px;
+  box-shadow: inset 2px 2px 0 rgba(0,0,0,0.1);
 }
 
 .tipsSection h4 {
-  font-size: 0.9rem;
-  color: #3D5500;
-  margin-bottom: 8px;
+  font-family: 'Press Start 2P', 'Courier New', monospace;
+  font-size: 0.5rem;
+  color: #0f380f;
+  margin-bottom: 10px;
   text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 1px;
 }
 
 .tip {
-  background: rgba(255,255,255,0.5);
+  background: rgba(255,255,255,0.3);
+  border: 1px solid #0f380f;
   padding: 8px 10px;
-  border-radius: 8px;
+  border-radius: 4px;
   margin-bottom: 6px;
-  font-size: 0.75rem;
-  color: #3D5500;
-  line-height: 1.3;
+  font-family: 'Press Start 2P', 'Courier New', monospace;
+  font-size: 0.4rem;
+  color: #0f380f;
+  line-height: 1.5;
 }
 
 .tip:last-child {
@@ -1567,12 +1612,14 @@ html, body {
 }
 
 .menuTitle {
-  color: #dc2626;
-  font-size: 2rem;
-  font-weight: 800;
-  margin-bottom: 20px;
+  font-family: 'Press Start 2P', 'Courier New', monospace;
+  font-size: 0.75rem;
+  color: #0f380f;
   text-transform: uppercase;
   letter-spacing: 2px;
+  margin-bottom: 20px;
+  text-align: center;
+  text-shadow: 1px 1px 0 rgba(255,255,255,0.3);
 }
 
 .statsOverview {
@@ -1582,24 +1629,31 @@ html, body {
 }
 
 .statBox {
-  background: linear-gradient(145deg, #f3f4f6, #e5e7eb);
-  border-radius: 15px;
-  padding: 15px 25px;
+  background: #9bbc0f;
+  border: 3px solid #0f380f;
+  border-radius: 4px;
+  padding: 15px 20px;
   text-align: center;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  box-shadow: 
+    3px 3px 0 #0f380f,
+    inset -2px -2px 0 rgba(0,0,0,0.1),
+    inset 2px 2px 0 rgba(255,255,255,0.3);
   min-width: 80px;
 }
 
 .statNumber {
   display: block;
-  font-size: 2rem;
-  font-weight: 800;
-  color: #dc2626;
+  font-family: 'Press Start 2P', 'Courier New', monospace;
+  font-size: 1.2rem;
+  color: #0f380f;
+  text-shadow: 1px 1px 0 rgba(255,255,255,0.3);
+  margin-bottom: 8px;
 }
 
 .statLabel {
-  font-size: 0.8rem;
-  color: #6b7280;
+  font-family: 'Press Start 2P', 'Courier New', monospace;
+  font-size: 0.45rem;
+  color: #306230;
   text-transform: uppercase;
 }
 
@@ -1658,11 +1712,14 @@ html, body {
 }
 
 .albumTitle {
-  color: #dc2626;
-  font-size: 1.5rem;
-  font-weight: 700;
+  font-family: 'Press Start 2P', 'Courier New', monospace;
+  font-size: 0.7rem;
+  color: #0f380f;
+  text-transform: uppercase;
+  letter-spacing: 2px;
   margin-bottom: 15px;
   text-align: center;
+  text-shadow: 1px 1px 0 rgba(255,255,255,0.3);
 }
 
 .emptyAlbum {
@@ -1672,7 +1729,7 @@ html, body {
   align-items: center;
   justify-content: center;
   text-align: center;
-  color: #6b7280;
+  color: #306230;
 }
 
 .setsList {
@@ -1680,22 +1737,37 @@ html, body {
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
 }
 
 .setRow {
-  background: linear-gradient(145deg, #f9fafb, #f3f4f6);
-  border-radius: 12px;
-  padding: 15px;
-  border: 2px solid transparent;
+  font-family: 'Press Start 2P', 'Courier New', monospace;
+  background: #9bbc0f;
+  border: 3px solid #0f380f;
+  border-radius: 4px;
+  padding: 12px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.1s ease;
+  box-shadow: 
+    3px 3px 0 #0f380f,
+    inset -2px -2px 0 rgba(0,0,0,0.1),
+    inset 2px 2px 0 rgba(255,255,255,0.3);
 }
 
 .setRow:hover,
 .setRow.selected {
-  border-color: #3b82f6;
-  background: linear-gradient(145deg, #eff6ff, #dbeafe);
+  background: #c4d300;
+  border-color: #0f380f;
+  box-shadow: 
+    4px 4px 0 #0f380f,
+    inset -2px -2px 0 rgba(0,0,0,0.1),
+    inset 2px 2px 0 rgba(255,255,255,0.3);
+}
+
+.setRow.selected::before {
+  content: '▶';
+  margin-left: 8px;
+  font-size: 0.5rem;
 }
 
 .setInfo {
@@ -1705,35 +1777,51 @@ html, body {
 }
 
 .setName {
-  font-weight: 700;
-  color: #1f2937;
-  font-size: 0.95rem;
+  font-family: 'Press Start 2P', 'Courier New', monospace;
+  font-size: 0.55rem;
+  color: #0f380f;
+  text-transform: uppercase;
 }
 
 .setCount {
-  font-size: 0.8rem;
-  color: #6b7280;
+  font-family: 'Press Start 2P', 'Courier New', monospace;
+  font-size: 0.45rem;
+  color: #306230;
 }
 
 .progressBar {
-  height: 8px;
-  background: #e5e7eb;
-  border-radius: 4px;
+  height: 12px;
+  background: #306230;
+  border: 2px solid #0f380f;
+  border-radius: 3px;
   overflow: hidden;
   margin-bottom: 5px;
+  box-shadow: inset 2px 2px 0 rgba(0,0,0,0.2);
 }
 
 .progressFill {
   height: 100%;
-  background: linear-gradient(90deg, #22c55e, #16a34a);
-  border-radius: 4px;
+  background: linear-gradient(180deg, #7cb342 0%, #558b2f 50%, #33691e 100%);
+  border-right: 2px solid #0f380f;
   transition: width 0.3s ease;
+  position: relative;
+}
+
+.progressFill::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: rgba(255,255,255,0.4);
 }
 
 .percentage {
-  font-size: 0.75rem;
-  font-weight: 700;
-  color: #16a34a;
+  font-family: 'Press Start 2P', 'Courier New', monospace;
+  font-size: 0.45rem;
+  color: #0f380f;
+  text-align: right;
 }
 
 /* === SET VIEW SCREEN === */
@@ -2192,13 +2280,19 @@ html, body {
 
 /* Saved Badge */
 .savedBadge {
-  background: linear-gradient(145deg, #22c55e, #16a34a);
+  font-family: 'Press Start 2P', 'Courier New', monospace;
+  font-size: 0.5rem;
+  background: linear-gradient(180deg, #22c55e 0%, #16a34a 100%);
   color: white;
-  padding: 12px 20px;
-  border-radius: 25px;
-  font-weight: 700;
+  padding: 12px 16px;
+  border: 3px solid #0f380f;
+  border-radius: 4px;
   text-align: center;
   margin: 15px 0;
+  box-shadow: 
+    3px 3px 0 #0f380f,
+    inset -2px -2px 0 rgba(0,0,0,0.2),
+    inset 2px 2px 0 rgba(255,255,255,0.3);
   animation: bounceIn 0.5s ease;
 }
 
@@ -2210,22 +2304,30 @@ html, body {
 }
 
 .scanAnotherBtn {
+  font-family: 'Press Start 2P', 'Courier New', monospace;
+  font-size: 0.55rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
   width: 100%;
-  padding: 15px;
-  background: linear-gradient(145deg, #3b82f6, #2563eb);
-  border: none;
-  border-radius: 12px;
+  padding: 14px 20px;
+  background: linear-gradient(180deg, #3b82f6 0%, #2563eb 100%);
+  border: 3px solid #1e3a8a;
+  border-radius: 4px;
   color: white;
-  font-size: 1rem;
-  font-weight: 700;
   cursor: pointer;
-  box-shadow: 0 4px 0 #1e40af;
+  box-shadow: 
+    4px 4px 0 #1e3a8a,
+    inset -2px -2px 0 rgba(0,0,0,0.2),
+    inset 2px 2px 0 rgba(255,255,255,0.4);
   transition: all 0.1s ease;
 }
 
 .scanAnotherBtn:active {
-  transform: translateY(4px);
-  box-shadow: 0 0 0 #1e40af;
+  transform: translate(2px, 4px);
+  box-shadow: 
+    2px 2px 0 #1e3a8a,
+    inset -2px -2px 0 rgba(0,0,0,0.2),
+    inset 2px 2px 0 rgba(255,255,255,0.4);
 }
 
 /* Responsive adjustments for new components */
