@@ -100,7 +100,7 @@ function PokedexControls({ onUp, onDown, onLeft, onRight, onMenu, onA, onB, view
 
 export default function Pokedex() {
   const { t, language } = useLanguage();
-  const { addCard, sets, getSetsWithStats, getSetCards, getTotalStats } = useCollection();
+  const { addCard, removeCard, sets, getSetsWithStats, getSetCards, getTotalStats } = useCollection();
   const [view, setView] = useState('closed');
   const [image, setImage] = useState(null);
   const [selectedFile, setSelectedFile] = useState(null);
@@ -118,6 +118,10 @@ export default function Pokedex() {
   const [selectedCardIndex, setSelectedCardIndex] = useState(0);
   const [currentSetId, setCurrentSetId] = useState(null);
   const [viewMode, setViewMode] = useState('grid'); // 'grid' or 'list'
+  
+  // Save confirmation modal state
+  const [showSaveModal, setShowSaveModal] = useState(false);
+  const [pendingCard, setPendingCard] = useState(null);
   
   const fileInputRef = useRef(null);
   const touchStartX = useRef(0);
@@ -318,18 +322,19 @@ export default function Pokedex() {
         throw new Error(language === 'he' ? 'לא ניתן לזהות את הקלף' : 'Could not identify card');
       }
       
-      // Auto-save to collection!
+      // Show save confirmation modal for image scan
       const ident = data.records?.[0]?._identification;
-      addCard({
+      const fullCardData = {
         ...cardData,
         setId: ident?.setId || ident?.set_id || 'unknown',
         set: ident?.set || 'Unknown Set',
         setTotal: ident?.set_total || 0
-      });
+      };
       
-      setResult(cardData);
+      setPendingCard(fullCardData);
+      setResult(fullCardData);
       setIsScanning(false);
-      setView('result');
+      setShowSaveModal(true);
 
     } catch (err) {
       console.error('❌ Error:', err);
@@ -378,18 +383,18 @@ export default function Pokedex() {
         throw new Error(language === 'he' ? 'לא נמצא קלף' : 'Card not found');
       }
       
-      // Auto-save to collection!
-      const ident = data.records?.[0]?._identification;
-      addCard({
+      // Show save confirmation modal for manual search
+      const fullCardData = {
         ...cardData,
-        setId: ident?.setId || ident?.set_id || 'unknown',
-        set: ident?.set || 'Unknown Set',
-        setTotal: ident?.set_total || 0
-      });
+        setId: cardData.setId || 'unknown',
+        set: cardData.set || 'Unknown Set',
+        setTotal: cardData.setTotal || 0
+      };
       
-      setResult(cardData);
+      setPendingCard(fullCardData);
+      setResult(fullCardData);
       setIsScanning(false);
-      setView('result');
+      setShowSaveModal(true);
 
     } catch (err) {
       console.error('❌ Error:', err);
@@ -553,6 +558,35 @@ export default function Pokedex() {
   );
 
   // Render Album View (Sets List)
+  // Handle delete card
+  const handleDeleteCard = (setId, cardId, cardName) => {
+    const confirmMsg = language === 'he' 
+      ? `למחוק את ${cardName} מהאלבום?`
+      : `Delete ${cardName} from album?`;
+    
+    if (window.confirm(confirmMsg)) {
+      removeCard(setId, cardId);
+      // Close modal if viewing deleted card
+      if (showCardModal) {
+        setShowCardModal(false);
+      }
+    }
+  };
+  const handleConfirmSave = () => {
+    if (pendingCard) {
+      addCard(pendingCard);
+      setShowSaveModal(false);
+      setShowCardModal(true);
+    }
+  };
+
+  // Handle cancel save
+  const handleCancelSave = () => {
+    setShowSaveModal(false);
+    setPendingCard(null);
+    setView('result');
+  };
+
   const renderAlbum = () => (
     <div className={styles.albumScreen}>
       <h3 className={styles.albumTitle}>{t('myAlbum')}</h3>
@@ -623,6 +657,7 @@ export default function Pokedex() {
                 key={card.id}
                 className={`${styles.cardThumb} ${index === selectedCardIndex ? styles.selected : ''}`}
                 onClick={() => setSelectedCardIndex(index)}
+                style={{ position: 'relative' }}
               >
                 {card.image ? (
                   <img 
@@ -637,6 +672,16 @@ export default function Pokedex() {
                 ) : (
                   <div className={styles.cardPlaceholder}>?</div>
                 )}
+                <button 
+                  className={styles.deleteCardBtn}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDeleteCard(currentSetId, card.id, card.name);
+                  }}
+                  title={language === 'he' ? 'מחק קלף' : 'Delete card'}
+                >
+                  ✕
+                </button>
                 <span className={styles.cardNumber}>#{card.number}</span>
               </div>
             ))}
@@ -979,11 +1024,24 @@ export default function Pokedex() {
             
             {/* Card Info Header */}
             {view === 'set-view' && currentSetId && (
-              <div className={styles.cardModalHeader}>
+              <div className={styles.cardModalHeader} style={{ position: 'relative' }}>
                 <span className={styles.cardModalSetName}>{sets[currentSetId]?.name}</span>
                 <span className={styles.cardModalCardNumber}>
                   #{getSetCards(currentSetId)[selectedCardIndex]?.number} / {sets[currentSetId]?.total}
                 </span>
+                <button 
+                  className={styles.deleteCardBtn}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    const card = getSetCards(currentSetId)[selectedCardIndex];
+                    if (card) {
+                      handleDeleteCard(currentSetId, card.id, card.name);
+                    }
+                  }}
+                  title={language === 'he' ? 'מחק קלף' : 'Delete card'}
+                >
+                  🗑️
+                </button>
               </div>
             )}
             
@@ -1064,6 +1122,32 @@ export default function Pokedex() {
                 {selectedCardIndex + 1} / {getSetCards(currentSetId).length}
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* Save Confirmation Modal */}
+      {showSaveModal && pendingCard && (
+        <div className={styles.modalOverlay} onClick={handleCancelSave}>
+          <div className={styles.saveModal} onClick={e => e.stopPropagation()}>
+            <h3 className={styles.saveModalTitle}>
+              {language === 'he' ? 'שמור קלף לאלבום?' : 'Save card to album?'}
+            </h3>
+            <div className={styles.saveModalCard}>
+              <img src={pendingCard.image} alt={pendingCard.name} className={styles.saveModalImage} />
+              <div className={styles.saveModalInfo}>
+                <p className={styles.saveModalName}>{pendingCard.name}</p>
+                <p className={styles.saveModalSet}>{pendingCard.set}</p>
+              </div>
+            </div>
+            <div className={styles.saveModalButtons}>
+              <button className={styles.saveModalConfirm} onClick={handleConfirmSave}>
+                {language === 'he' ? '✓ שמור' : '✓ Save'}
+              </button>
+              <button className={styles.saveModalCancel} onClick={handleCancelSave}>
+                {language === 'he' ? '✕ ביטול' : '✕ Cancel'}
+              </button>
+            </div>
           </div>
         </div>
       )}

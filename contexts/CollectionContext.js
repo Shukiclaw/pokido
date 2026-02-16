@@ -128,12 +128,45 @@ export function CollectionProvider({ children }) {
     return { totalCards, totalSets };
   };
 
+  // Remove a card from collection
+  const removeCard = (setId, cardId) => {
+    console.log('Removing card:', { setId, cardId }); // DEBUG
+    
+    setCollection(prev => {
+      const setCards = prev[setId] || [];
+      const updatedCards = setCards.filter(c => c.id !== cardId);
+      
+      // If no cards left in set, remove the set too
+      if (updatedCards.length === 0) {
+        const { [setId]: removedSet, ...remainingSets } = prev;
+        return remainingSets;
+      }
+      
+      return {
+        ...prev,
+        [setId]: updatedCards
+      };
+    });
+    
+    // Update sets if no cards left
+    setSets(prev => {
+      const setCards = collection[setId] || [];
+      const updatedCards = setCards.filter(c => c.id !== cardId);
+      if (updatedCards.length === 0) {
+        const { [setId]: removed, ...remaining } = prev;
+        return remaining;
+      }
+      return prev;
+    });
+  };
+
   return (
     <CollectionContext.Provider value={{
       collection,
       sets,
       isLoaded,
       addCard,
+      removeCard,
       getSetsWithStats,
       getSetCards,
       getTotalStats
