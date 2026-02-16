@@ -118,10 +118,9 @@ export default function Pokedex() {
   const [selectedCardIndex, setSelectedCardIndex] = useState(0);
   const [currentSetId, setCurrentSetId] = useState(null);
   const [viewMode, setViewMode] = useState('grid'); // 'grid' or 'list'
-  
-  // Save confirmation modal state
-  const [showSaveModal, setShowSaveModal] = useState(false);
-  const [pendingCard, setPendingCard] = useState(null);
+
+  // Track if current card is saved
+  const [cardSaved, setCardSaved] = useState(false);
   
   const fileInputRef = useRef(null);
   const touchStartX = useRef(0);
@@ -321,8 +320,8 @@ export default function Pokedex() {
       if (!cardData) {
         throw new Error(language === 'he' ? 'לא ניתן לזהות את הקלף' : 'Could not identify card');
       }
-      
-      // Show save confirmation modal for image scan
+
+      // Store card data including set info for later save
       const ident = data.records?.[0]?._identification;
       const fullCardData = {
         ...cardData,
@@ -330,11 +329,11 @@ export default function Pokedex() {
         set: ident?.set || 'Unknown Set',
         setTotal: ident?.set_total || 0
       };
-      
-      setPendingCard(fullCardData);
+
       setResult(fullCardData);
+      setCardSaved(false);
       setIsScanning(false);
-      setShowSaveModal(true);
+      setView('result');
 
     } catch (err) {
       console.error('❌ Error:', err);
@@ -382,19 +381,19 @@ export default function Pokedex() {
       if (!cardData) {
         throw new Error(language === 'he' ? 'לא נמצא קלף' : 'Card not found');
       }
-      
-      // Show save confirmation modal for manual search
+
+      // Store card data for display and later save
       const fullCardData = {
         ...cardData,
         setId: cardData.setId || 'unknown',
         set: cardData.set || 'Unknown Set',
         setTotal: cardData.setTotal || 0
       };
-      
-      setPendingCard(fullCardData);
+
       setResult(fullCardData);
+      setCardSaved(false);
       setIsScanning(false);
-      setShowSaveModal(true);
+      setView('result');
 
     } catch (err) {
       console.error('❌ Error:', err);
@@ -527,6 +526,7 @@ export default function Pokedex() {
     setError('');
     setSearchName('');
     setSearchNumber('');
+    setCardSaved(false);
     setView('upload');
   };
 
@@ -572,19 +572,12 @@ export default function Pokedex() {
       }
     }
   };
-  const handleConfirmSave = () => {
-    if (pendingCard) {
-      addCard(pendingCard);
-      setShowSaveModal(false);
-      setShowCardModal(true);
+  // Handle save card to album
+  const handleSaveCard = () => {
+    if (result) {
+      addCard(result);
+      setCardSaved(true);
     }
-  };
-
-  // Handle cancel save
-  const handleCancelSave = () => {
-    setShowSaveModal(false);
-    setPendingCard(null);
-    setView('result');
   };
 
   const renderAlbum = () => (
@@ -943,9 +936,15 @@ export default function Pokedex() {
                   )}
                 </div>
 
-                <div className={styles.savedBadge}>
-                  ✅ {t('savedToAlbum')}
-                </div>
+                {cardSaved ? (
+                  <div className={styles.savedBadge}>
+                    ✅ {t('savedToAlbum')}
+                  </div>
+                ) : (
+                  <button onClick={handleSaveCard} className={styles.saveToAlbumBtn}>
+                    💾 {t('saveToAlbum')}
+                  </button>
+                )}
 
                 <button onClick={reset} className={styles.scanAnotherBtn}>
                   {t('scanAnother')}
@@ -1122,32 +1121,6 @@ export default function Pokedex() {
                 {selectedCardIndex + 1} / {getSetCards(currentSetId).length}
               </div>
             )}
-          </div>
-        </div>
-      )}
-
-      {/* Save Confirmation Modal */}
-      {showSaveModal && pendingCard && (
-        <div className={styles.modalOverlay} onClick={handleCancelSave}>
-          <div className={styles.saveModal} onClick={e => e.stopPropagation()}>
-            <h3 className={styles.saveModalTitle}>
-              {language === 'he' ? 'שמור קלף לאלבום?' : 'Save card to album?'}
-            </h3>
-            <div className={styles.saveModalCard}>
-              <img src={pendingCard.image} alt={pendingCard.name} className={styles.saveModalImage} />
-              <div className={styles.saveModalInfo}>
-                <p className={styles.saveModalName}>{pendingCard.name}</p>
-                <p className={styles.saveModalSet}>{pendingCard.set}</p>
-              </div>
-            </div>
-            <div className={styles.saveModalButtons}>
-              <button className={styles.saveModalConfirm} onClick={handleConfirmSave}>
-                {language === 'he' ? '✓ שמור' : '✓ Save'}
-              </button>
-              <button className={styles.saveModalCancel} onClick={handleCancelSave}>
-                {language === 'he' ? '✕ ביטול' : '✕ Cancel'}
-              </button>
-            </div>
           </div>
         </div>
       )}

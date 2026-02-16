@@ -27,6 +27,7 @@ export const translations = {
     noCardsInSet: 'אין קלפים בסט זה',
     back: 'חזרה',
     savedToAlbum: 'נשמר לאלבום!',
+    saveToAlbum: 'שמור לאלבום',
     scanAnother: 'סרוק עוד קלף',
     
     // Upload screen
@@ -97,6 +98,7 @@ export const translations = {
     noCardsInSet: 'No cards in this set',
     back: 'Back',
     savedToAlbum: 'Saved to album!',
+    saveToAlbum: 'Save to Album',
     scanAnother: 'Scan Another',
     
     // Upload screen

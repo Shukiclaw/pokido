@@ -2398,6 +2398,44 @@ html, body {
   100% { transform: scale(1); opacity: 1; }
 }
 
+/* Save to Album Button */
+.saveToAlbumBtn {
+  font-family: 'Heebo', sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  width: 100%;
+  padding: 14px 20px;
+  background: linear-gradient(180deg, #22c55e 0%, #16a34a 100%);
+  border: 3px solid #15803d;
+  border-radius: 4px;
+  color: white;
+  cursor: pointer;
+  margin: 15px 0;
+  box-shadow:
+    4px 4px 0 #15803d,
+    inset -2px -2px 0 rgba(0,0,0,0.2),
+    inset 2px 2px 0 rgba(255,255,255,0.4);
+  transition: all 0.1s ease;
+}
+
+.saveToAlbumBtn:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    5px 5px 0 #15803d,
+    inset -2px -2px 0 rgba(0,0,0,0.2),
+    inset 2px 2px 0 rgba(255,255,255,0.4);
+}
+
+.saveToAlbumBtn:active {
+  transform: translate(2px, 2px);
+  box-shadow:
+    2px 2px 0 #15803d,
+    inset -2px -2px 0 rgba(0,0,0,0.2),
+    inset 2px 2px 0 rgba(255,255,255,0.4);
+}
+
 .scanAnotherBtn {
   font-family: 'Heebo', sans-serif;
   font-size: 1rem;
